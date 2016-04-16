@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<style>
+			h1,h2,h3,h4 {text-align:center;}
+			.removeSubscription {
+				float:right;
+				color:red;
+				font-family:Arial;
+				cursor:pointer;
+			}
+			.leftFrameForm {
+				width:95%;
+				border:2px solid black
+			}
+		</style>
+		<title>CoralMe integration demo</title>
+	</head>
+	<body>
+		<script src="./libs/jquery-2.2.3.min.js"></script>
+		<script src="./libs/jquery.jsonrpcclient.js"></script>
+		<script>
+			var socket; // websocket global variable
+			
+			$(document).ready(function() {
+				// Hide UI until connection is established
+				$('#connectedDiv').hide();
+				// Textbox enter trigger
+				$('#connectButton').keyup(function(event){
+				    if(event.keyCode == 13){
+					$('#loginButton').click();
+				    }
+				});
+				
+				// Connection fuction
+				$('#connectButton').on('click', function() {
+					// Init new socket
+					var address = $('#serverAddress').val();
+					socket = new $.JsonRpcClient({ socketUrl: address });
+					updateConnection(true);
+				});
+				
+			// Image selection
+			$('#imageFile').on('change', function(e){
+				var file = e.originalEvent.target.files[0];
+				var reader = new FileReader();
+				
+				reader.onload = function(evt){
+					socket.notify(
+					  'Context.setImage', [ evt.target.result]
+					);
+					$('#previewImg').attr("src", reader.result);
+				};
+				//And now, read the image in base64
+				reader.readAsDataURL(file);
+			}); 
+				
+				$('#disconnectButton').on('click', function() {
+					socket.close();
+				});
+			});
+
+			// Empty string validation helper
+			function updateConnection(isConnected) {
+				if (isConnected) {
+					$('#connectDiv').hide();
+					$('#connectedDiv').show();
+				} else {
+					$('#connectDiv').show();
+					$('#connectedDiv').hide();
+				}
+			}			
+			
+			// Empty string validation helper
+			function isEmpty(str) {
+				return (!str || 0 === str.length);
+			}
+			// Get server IP helper
+			function serverIP(){
+				return $('#serverAddress').val();
+			}	
+		</script>
+		<div style="width:900px; margin:0 auto; border:3px solid black; padding:1em 1em 3em 1em">
+			<table style="width:100%">
+				<tr>
+					<td><h1>CoralMe annotation platform integration demo</h1></td>
+				</tr>	
+				<tr>
+					<td>
+						<div id="connectDiv">
+							<h6 style="padding-left:6em">Connect to CoralMe server</h6>
+							Server address: <br />
+							<input type="text" id="serverAddress" value="ws://localhost:8888">
+							<br />
+							<button type="button" id="connectButton">ok!</button>
+						</div>
+						<div id="connectedDiv">
+							Connected!
+							
+							<br />
+							<div class="">Open an new image: <input type="file" id="imageFile" accept="image/*"></div>
+							<img src="" height="200" width="200" id="previewImg" alt="Image preview...">
+							
+							<input type="hidden" name="usernameKey" id="usernameKey"/>
+							<br />
+							<button type="button" id="disconnectButton">disconnect!</button>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<ul id="log"></ul>
+					</td>
+				</tr>
+			</table>
+		</div>
+			<div style="text-align:center;padding-top:1em"><h6>Jean-Nicola Blanchet (cc) 2016 Some rights reserved</h6></div>
+	</body>
+</html>
