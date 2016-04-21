@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+		<title>CoralMe integration demo</title>
+
+		<!-- Bootstrap -->
+		<link href="css/bootstrap.min.css" rel="stylesheet">
+		<link href="css/index.css" rel="stylesheet">
+	</head>
+	<body>
+	
+		<div class="container">
+			<h1>CoralMe integration demo</h1>
+			<div class="container" id="divStep1">
+				<p>
+					This demo demonstrates how CoralMe can be integrated to any application through the JSON-RPC protocol.
+				</p>
+				<ol>
+					<li>
+						Make sure the MATLAB server is up and running.
+					</li>
+					<li>
+						<form class="form-inline" id="formTestServer">
+							<div class="form-group">
+								Enter the server address and port.
+								<input type="text" class="form-control" id="inputAddress" placeholder="ws://hostname:port" value="ws://localhost:8888">
+								<button type="submit" class="btn btn-default" id="buttonConnect">Test!</button>
+							</div>
+						</form>
+					</li>
+					<li>
+						<form class="form-inline">
+							<div class="form-group">
+								Select an image.
+								<input type="file" class="form-control hidden" id="inputImage" accept="image/*">
+							</div>
+						</form>
+					</li>
+				</ol>
+			</div>
+			<div class="container" id="divStep2">
+			<h2>1 - Segmentation</h2>
+			<div class="row">
+				Select a mode:
+				<select id="selectSegmentationMode">
+					<option value="" selected="selected"></option>
+					<option value="SmartRegionSelector">Smart Region Selector</option>
+				</select>
+			</div>
+				<div class="row">
+					<div class="col-md-3">Kernel size:</div>
+					<div class="col-md-9">|------------X--------| here be sliders</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">Image resize factor:</div>
+					<div class="col-md-9">|----X----------------|</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">Number of centers:</div>
+					<div class="col-md-9">|------------------X--|</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3">Regularization:</div>
+					<div class="col-md-9">|---------X-----------|</div>
+				</div>
+				<div class="row">
+					<div class="col-md-9"></div>
+					<div class="col-md-3">Server working: <img id="loader" src="img/loader.gif" hidden /></div>
+				</div>
+				<div class="row">
+					<div id="divWorkingArea" class="workingContainer" >
+						<img id="imgWorkingArea"  class="workingContainer" />
+					</div>
+				</div>
+			</div>
+			<div class="container" id="divStep3">
+			<h2>2 - Region refinement</h2>
+			
+			</div>
+			<div class="container" id="divStep4">
+			<h2>3 - Annotation</h2>
+			</div>
+		</div>
+		<script src="js/jquery-2.2.3.min.js"></script>
+		<script src="js/bootstrap.min.js"></script>
+		<script src="js/jquery.jsonrpcclient.js"></script>
+		<script src="js/ocanvas-2.8.3.min.js"></script>
+		<script src="js/SmartRegionSelectorGUI.js"></script>
+		<script src="js/index.js"></script>
+
+	</body>
+</html>
