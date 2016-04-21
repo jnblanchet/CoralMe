@@ -34,7 +34,7 @@ classdef JSONRPC2Error < jsonrpc2.JSONRPC2Message
         JSON_INVALID_PARAMS                    = -32602;     % JSON ERROR: Invalid params   - Invalid method parameter(s).
         JSON_INTERNAL_ERROR                    = -32603;     % JSON ERROR: Internal error   - Internal JSON-RPC error.
         JSON_PARSE_ERROR                       = -32700;     % JSON ERROR: Parse error      - Invalid JSON was received by the server.
-        % -32000 to -32099 - JSON: Server error - Reserved for implementation-defined server-errors.
+        % -32000 to rt-32099 - JSON: Server error - Reserved for implementation-defined server-errors.
         
         % additional definitions for JSON: Server errors defined at: http://xmlrpc-epi.sourceforge.net/specs/rfc.fault_codes.php
         

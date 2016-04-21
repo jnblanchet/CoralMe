@@ -11,6 +11,15 @@ function instance = coralMeFactory(context, className)
             case 'Context'
                 instance = context;
             case 'SmartRegionSelector'
-                instance = SmartRegionSelector(context.getResizeImage(), context.getKernelSize());
+                requiresImage(context);
+                instance = SmartRegionSelector(context.getImage());
+            otherwise
+                error('coralMeFactory.m does not allow this class to be created.')
         end
+end
+
+function requiresImage(context)
+    if isempty(context.getImage())
+        error('Image has not yet been set. Call Context.setImage(image) first.');
+    end
 end

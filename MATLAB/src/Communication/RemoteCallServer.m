@@ -20,24 +20,52 @@ classdef RemoteCallServer < matWebSocketServer
         end
         
         function onMessage(this,message,conn)
-            % open request();
-            request = jsonrpc2.JSONRPC2Request.parse(message);
-            request.params.params = this.decodeArguments(request.params.params);
+            % parse request();
+%             try
+                request = jsonrpc2.JSONRPC2Request.parse(message);
+%             catch
+%                 response = jsonrpc2.JSONRPC2Error( 0, jsonrpc2.JSONRPC2Error.JSON_PARSE_ERROR,'unable to parse json from last request!');
+%                 this.send(conn,response.toJSONString());
+%             end
+            
+            % decode arguments();
+%             try
+                request.params.params = this.decodeArguments(request.params.params);
+%             catch
+%                 response = jsonrpc2.JSONRPC2Error( 0, jsonrpc2.JSONRPC2Error.JSON_PARSE_ERROR,'unable to decode arguments!');
+%                 this.send(conn,response.toJSONString());
+%             end
+            
             
             % handle request
             context = this.ContextMap(conn.hashCode);
-            result = context.handleRequest(request);
+%             try
+                result = context.handleRequest(request);
+%             catch err
+%                 if(~isfield(err,'code'))
+%                     code = jsonrpc2.JSONRPC2Error.JSON_INTERNAL_ERROR;
+%                 else
+%                     code = err;
+%                 end
+%                 response = jsonrpc2.JSONRPC2Error( 0, code,err.message);
+%                 this.send(conn,response.toJSONString());
+%             end
             
-            % send response
-            if ~request.isNotification()
-                response = jsonrpc2.JSONRPC2Response( request.id, this.encodeArguments(result) );
-                json_response = response.toJSONString();
-                this.send(conn,json_response);
-            end
+            % send response if needed
+%             try
+                if ~request.isNotification()
+                    response = jsonrpc2.JSONRPC2Response( request.id, this.encodeArguments(result) );
+                    json_response = response.toJSONString();
+                    this.send(conn,json_response);
+                end
+%             catch err
+%                 response = jsonrpc2.JSONRPC2Error( 0, jsonrpc2.JSONRPC2Error.JSON_INTERNAL_ERROR, sprintf('Unable to send response, MATLAB error: "%s".',err.message));
+%                 this.send(conn,response.toJSONString());
+%             end
         end
         
         function onError(this,message,conn)
-            display(['An error has occured: ' message]);
+            display(['Recieved an error from client: ' message]);
         end
         
         function onClose(this,message,conn)
@@ -59,14 +87,12 @@ classdef RemoteCallServer < matWebSocketServer
                     image = base64decode(image);
                     % find format
                     fmt = {'JPEG','JPG','PNG','BMP','CUR','PPM','GIF','PBM','RAS','HDF4','PCX','TIFF','ICO','PGM','XWD'};
-                    f = -1;
-                    for i=1:numel(fmt)
-                        if ~isempty(strfind(header,['/' fmt{i}]))
-                            f = i;
+                    for j=1:numel(fmt)
+                        if ~isempty(strfind(header,['/' fmt{j}]))
                             break;
                         end
                     end
-                    argsOut{i} = imdecode( image, fmt{f});
+                    argsOut{i} = imdecode( image, fmt{j});
                     
                 else
                     argsOut{i} = argsIn{i};
@@ -76,7 +102,7 @@ classdef RemoteCallServer < matWebSocketServer
         
         % encode the image argument in base64 URL format
         function argOut = encodeArguments(this, argIn)
-            [h,w,d] = size(size(argIn,3));
+            [h,w,d] = size(argIn);
             if h >=2 && w >= 2 && d == 3 % this is an image.
                 body64 = base64encode(imencode( argIn, 'JPEG'));
                 argOut = strcat('data:image/jpeg;base64,', body64);

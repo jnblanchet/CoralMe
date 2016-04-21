@@ -1,5 +1,5 @@
-classdef SmartRegionSelector < handle
-    %SMARTREGIONSELECTOR A a tool for fast coral image segmentation
+classdef SmartRegionSelector < AbstractSegmentationApproach
+    %SMARTREGIONSELECTOR A a tool for fast coral image segmentation.
     %   Segmenation is done by adding successive blobs and changing their
     %   parameters to fit the image. The LabelMap and contourImage give
     %   real-time feedback to better define the segmentation.
@@ -7,7 +7,6 @@ classdef SmartRegionSelector < handle
     properties (Access = private)
         currentGroupId
         kernelSize % the expected radius of a texel
-        image % for visualization
     end
     
     properties (Access = public)
@@ -34,40 +33,54 @@ classdef SmartRegionSelector < handle
             this.kernelSize = kernelSize;
             this.Blobs = {};
             this.TextureMap = [];
-            this.image = image;
-            
-            this.initTextureMap(image);
+            this.setImage(image);
         end
         
         % called when adding a new blob.
-        function newBlobId = createBlob(this,x,y)
+        % coordinates may be absolute (in px, after resize) or relative (0 < x < 1)
+        % if using relative coordinates, r is defined as a ratio of the width
+        function newBlobId = createBlob(this,x,y,r)
+            x = this.toAbsolute(x,size(this.resizedImage,1));
+            y = this.toAbsolute(y,size(this.resizedImage,2));
+            r = this.toAbsolute(r,size(this.resizedImage,2));
             if(x < 1 || y < 1 || x > size(this.image,1) || y > size(this.image,2))
                 error('Invalid point position');
             end
             
             newBlobId = numel(this.Blobs) + 1;
             % estimate a good default size (adaptive)
-            adaptiveSize = 0; counter = 0;
-            for i=1:numel(this.Blobs)
-                if(isempty(this.Blobs{i}))
-                    continue;
+            if nargin < 4
+                adaptiveSize = 0; counter = 0;
+                for i=1:numel(this.Blobs)
+                    if(isempty(this.Blobs{i}))
+                        continue;
+                    end
+                    adaptiveSize = adaptiveSize + this.Blobs{i}.getRadius();
+                    counter = counter + 1;
                 end
-                adaptiveSize = adaptiveSize + this.Blobs{i}.getRadius();
-                counter = counter + 1;
-            end
-            if counter == 0
-                adaptiveSize = 100;
-            else
-                adaptiveSize = adaptiveSize ./ counter;
+                if counter == 0
+                    adaptiveSize = 100;
+                else
+                    adaptiveSize = adaptiveSize ./ counter;
+                end
+                r = adaptiveSize;
             end
             % create blob
-            this.Blobs{newBlobId} = Blob(x,y,adaptiveSize,newBlobId,this.nextGroupId());
+            this.Blobs{newBlobId} = Blob(x,y,r,newBlobId,this.nextGroupId());
         end
         
         % an existing blob of the same group can be copied to a new location (extend region)
-        function newBlobId = copyBlobToLocation(this, blobId, x, y)
+        % r is optional.
+        function newBlobId = copyBlobToLocation(this, blobId, x, y, r)
+            x = this.toAbsolute(x,size(this.resizedImage,1));
+            y = this.toAbsolute(y,size(this.resizedImage,2));
+            
             newBlobId = numel(this.Blobs) + 1;
             this.Blobs{newBlobId} = Blob(x,y,100,newBlobId,this.Blobs{blobId}.getGroupId);
+            
+            if nargin >= 5
+                this.resizeBlobRegion(newBlobId, r)
+            end
         end
         
         % blobs can be relocated
@@ -81,7 +94,9 @@ classdef SmartRegionSelector < handle
         end
         
         % blobs can be resized
+        % if using relative size is used for r (0 < r < W), r is defined as a ratio of the width
         function resizeBlobRegion(this, blobId, newSize)
+            newSize = this.toAbsolute(newSize,size(this.resizedImage,2));
             this.Blobs{blobId}.resize(newSize);
         end
         
@@ -90,9 +105,10 @@ classdef SmartRegionSelector < handle
             valid = blobId >= 1 && blobId <= numel(this.Blobs) && ~isempty(this.Blobs{blobId});
         end
         
-        % get the resulting segmentation maps for display or feature extraction..
-        function [labelMap, contourImage] = getMap(this)
-            labelMap = zeros(size(this.image,1),size(this.image,2),'uint16');
+        % get the resulting segmentation maps for display, access the
+        % this.labelMap (index map) property for feature extraction.
+        function [contourImage] = getMap(this)
+            labelMap = zeros(size(this.TextureMap,1),size(this.TextureMap,2),'uint16');
             for i=1:numel(this.Blobs)
                 if(isempty(this.Blobs{i}))
                     continue;
@@ -103,22 +119,19 @@ classdef SmartRegionSelector < handle
                 tmpCrop(mask) = this.Blobs{i}.getGroupId();
                 labelMap(box(1):box(2),box(3):box(4)) = tmpCrop;
             end
-            
-            s = size(this.image);
-            labels_rgb = label2rgb(uint8(labelMap),'jet');
-            labels_rgb = imresize(labels_rgb,s(1:2),'nearest');
-            labels = labelMap;
-            labels = ~~abs(imfilter(labels,[-1,-1,-1;-1,8,-1;-1,-1,-1], 'same'));
-            labels = imclose(labels,strel('disk',3));
-            labels = imresize(labels,s(1:2));
-            labels = imdilate(labels,strel('disk',2));
-            contourImage = uint8(zeros(size(this.image)));
-            p = uint8(~labels);
-            n = uint8(labels);
-            for c=1:3
-                contourImage(:,:,c) = this.image(:,:,c) .* p + labels_rgb(:,:,c) .* n;
-            end
+            this.labelMap = labelMap;
+            contourImage = this.getContourImage();
         end
+        
+        function size = getKernelSize(this)
+            size = this.kernelSize;
+        end
+        
+        function setKernelSize(this, newSize)
+            this.kernelSize = newSize;
+            this.initTextureMap(this.image);
+        end
+            
     end
     
     methods (Access = private)
@@ -133,4 +146,14 @@ classdef SmartRegionSelector < handle
         end
         
     end
+    
+    methods (Access = protected)
+        
+        function afterImageChanged(this)
+            this.Blobs = {};
+            this.initTextureMap(this.resizedImage);
+        end
+        
+    end
+    
 end

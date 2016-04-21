@@ -95,7 +95,7 @@ try
     a.resizeBlobRegion(id, 50);
     a.resizeBlobRegion(a.copyBlobToLocation(id, 100, 75),25);
     a.resizeBlobRegion(a.copyBlobToLocation(id, 140, 100),100);
-    [labelMap, contourImage] = a.getMap();
+    contour = a.getMap();
     % imshow(contourImage);
     fprintf('PASSED\n');
 catch
