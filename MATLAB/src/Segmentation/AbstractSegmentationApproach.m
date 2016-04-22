@@ -12,19 +12,17 @@ classdef (Abstract) AbstractSegmentationApproach < handle
     methods (Access = protected)        
         function contourImage = getContourImage(this)
             s = size(this.image);
-            labels_rgb = label2rgb(uint8(this.labelMap),'jet');
+            labels_rgb = label2rgb(uint8(this.labelMap),'jet','k');
             labels_rgb = imresize(labels_rgb,s(1:2),'nearest');
             labels = this.labelMap;
             labels = ~~abs(imfilter(labels,[-1,-1,-1;-1,8,-1;-1,-1,-1], 'same'));
-            labels = imclose(labels,strel('disk',3));
             labels = imresize(labels,s(1:2));
-            labels = imdilate(labels,strel('disk',2));
-            contourImage = uint8(zeros(size(this.image)));
-            p = uint8(~labels);
-            n = uint8(labels);
-            for c=1:3
-                contourImage(:,:,c) = this.image(:,:,c) .* p + labels_rgb(:,:,c) .* n;
-            end
+            labels = imdilate(labels,strel('disk',3));
+            contourImage = zeros(s(1),s(2),4,'uint8');
+            contourImage(:,:,1:3) = labels_rgb;
+            
+            % 4th channel is transparency
+            contourImage(:,:,4) = uint8(labels(:,:,1));
         end
     end
     
@@ -74,9 +72,9 @@ classdef (Abstract) AbstractSegmentationApproach < handle
     methods (Access = protected)
         function y = toAbsolute(this, x, ref)
             if(x < 1.0)
-                y = x * ref;
+                y = round(x * ref);
             else
-                y = x;
+                y = round(x);
             end
         end
     end

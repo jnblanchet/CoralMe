@@ -103,9 +103,14 @@ classdef RemoteCallServer < matWebSocketServer
         % encode the image argument in base64 URL format
         function argOut = encodeArguments(this, argIn)
             [h,w,d] = size(argIn);
-            if h >=2 && w >= 2 && d == 3 % this is an image.
-                body64 = base64encode(imencode( argIn, 'JPEG'));
-                argOut = strcat('data:image/jpeg;base64,', body64);
+            if h >=2 && w >= 2 % this is an image.
+                if  d == 3 % jpeg is light for 3 channels
+                    body64 = base64encode(imencode( argIn, 'JPEG'));
+                    argOut = strcat('data:image/jpeg;base64,', body64);
+                elseif  d == 4 % png is needed for transparency
+                    body64 = base64encode(imencode( argIn, 'PNG'));
+                    argOut = strcat('data:image/png;base64,', body64);
+                end
             else
                 argOut = argIn;
             end

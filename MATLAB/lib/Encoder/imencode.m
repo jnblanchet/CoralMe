@@ -15,7 +15,12 @@ if nargin < 2, fmt = 'png'; end
 
 tempfile = sprintf('%s.%s', tempname, fmt);
 try
-    imwrite(input, tempfile, fmt, varargin{:});
+    if size(input,3) == 3 || size(input,3) == 1 % 3 channels
+        imwrite(input, tempfile, fmt, varargin{:});
+    elseif size(input,3) == 4 % 4 channels (4th = mask)
+        xmap = uint8(input(:,:,1:3)) .* uint8(input(:,:,[4 4 4]));
+        imwrite(xmap, tempfile, fmt,'Transparency', [0 0 0], varargin{:});
+    end
     fid = fopen(tempfile, 'r');
     output = fread(fid, inf, 'uint8=>uint8')';
     fclose(fid);
