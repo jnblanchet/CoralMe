@@ -73,14 +73,15 @@ function renderCanvas() {
 	// add fresh canvas of the correct size
 	$('#canvasWorkingArea').remove();
 	var newCanvas = $('<canvas id="canvasWorkingArea" class="overlay" width="' + W + '" height="' + H + '" />');
-	$('#imgWorkingArea').after(newCanvas);
+	$('#imgWorkingAreaOverlay').after(newCanvas);
+	$('body').on('contextmenu', '#canvasWorkingArea', function(e){ return false; });
 	
 	var canvas = oCanvas.create({
 		canvas: '#canvasWorkingArea',
 		fps: 30
 	});
 	
-	SmartRegionSelectorGUI.init(canvas, H, W, socket, 'imgWorkingArea');
+	SmartRegionSelectorGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
 }
 
 

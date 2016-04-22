@@ -5,7 +5,7 @@ var SmartRegionSelectorGUI = SmartRegionSelectorGUI || {
 	W: [0],
 	imgDisplay: '',
 	targetMarker: null, //currently selected marker
-	idMap: {}, // a map object mapping local ids to server ids
+	idMap: new Map(), // a map object mapping local ids to server ids
 	states: {IDLE: 1, RESIZING: 2, MOVING: 3},
 	state: null,
 	connectedSocket: null,
@@ -18,57 +18,73 @@ var SmartRegionSelectorGUI = SmartRegionSelectorGUI || {
 		this.connectedSocket = connectedSocket;
 		
 		ocanvas.bind('click', function (clickEvent) {
-			switch (clickEvent.which) {
-				case 1: // left click
-					SmartRegionSelectorGUI.leftClickHandler(clickEvent);
-					break;
-			}
+			if (clickEvent.which == 1 || clickEvent.which == 2)
+				SmartRegionSelectorGUI.clickHandler(clickEvent, clickEvent.which);
 		});
+				
 		ocanvas.bind('mousemove', function (moveEvent) {
 			SmartRegionSelectorGUI.mouseMoveHandler(moveEvent);
 		});
+		
+		ocanvas.bind("keydown", function (e) {
+			if(e.which == SmartRegionSelectorGUI.ocanvas.keyboard.ESC)
+				SmartRegionSelectorGUI.escKeyPressedHandler(e);
+			if(e.which == 46) // delete 
+				SmartRegionSelectorGUI.deleteKeyPressedHandler(e);
+		});
+
 	},
 	
-	leftClickHandler: function(clickEvent) {
+	copyingId: -1,
+	clickHandler: function(clickEvent, buttonId) {
 		switch (this.state) {
-			case this.states.IDLE:
-				var marker = this.ocanvas.display.arc({
-						x: clickEvent.x,
-						y: clickEvent.y,
-						radius: 4,
-						start: 0,
-						end: 360,
-						stroke: '2px #ff0',
-						fill: '#f90'
-					});
-				this.targetMarker = marker;
-				this.ocanvas.addChild(marker);
+			case this.states.IDLE: // create (right click) or copy (left click)
+				if (!this.targetMarker || buttonId == 2) {
+					this.copyingId = -1; // first marker on new image is always create
+				} else if (buttonId == 1) {
+					this.copyingId = this.targetMarker.id;
+				}
+				
+				var marker = this.createMarker(clickEvent.x,clickEvent.y);
+				this.clearSelection(); this.updateSelection(marker);
 				this.state = this.states.RESIZING;
 				break;
-			case this.states.RESIZING:
+			case this.states.RESIZING: // lock size
 				this.targetMarker.removeChild(this.sizeCircle);
 				this.state = this.states.IDLE;
 				var y = this.targetMarker.x / this.W;
 				var x = this.targetMarker.y / this.H;
-				var r = this.sizeCircle.radius / this.W;
+				var r = (this.sizeCircle) ? this.sizeCircle.radius / this.W : 0.15;
 				this.sizeCircle = null;
 				obj = this;
-				// create blob
-				this.connectedSocket.call(
-					'SmartRegionSelector.createBlob', [x,y,r],
-					function(result) {
-						// update backgroundImage
-						obj.idMap[obj.targetMarker.id] = result;
-						obj.updateBackground();
-					}
-				);
-				
+				if (this.copyingId == -1) {
+					// create blob
+					this.connectedSocket.call(
+						'SmartRegionSelector.createBlob', [x,y,r],
+						function(result) {
+							// update backgroundImage
+							obj.idMap[obj.targetMarker.id] = result;
+							obj.updateBackground();
+						}
+					);
+				} else {
+					var id = obj.idMap[this.copyingId];
+					// copy blob
+					this.connectedSocket.call(
+						'SmartRegionSelector.copyBlobToLocation', [id,x,y,r],
+						function(result) {
+							// update backgroundImage
+							obj.idMap[obj.targetMarker.id] = result;
+							obj.updateBackground();
+						}
+					);
+				}
 				break;
 			case this.states.MOVING:
 				break;
 		}
 	},
-	
+		
 	sizeCircle: null,
 	mouseMoveHandler: function(moveEvent) {
 		switch (this.state) {
@@ -95,6 +111,41 @@ var SmartRegionSelectorGUI = SmartRegionSelectorGUI || {
 		}
 	},
 	
+	escKeyPressedHandler: function(keyEvent) {
+		switch (this.state) {
+			case this.states.IDLE: // clear selection
+				this.clearSelection();
+				this.ocanvas.redraw();
+				break;
+			case this.states.RESIZING: // cancel blob creation
+				this.targetMarker.removeChild(this.sizeCircle);
+				this.sizeCircle = null;
+				this.ocanvas.removeChild(this.targetMarker);
+				this.clearSelection();
+				this.state = this.states.IDLE;
+				this.ocanvas.redraw();
+				break;
+			case this.states.MOVING:
+				break;
+		}
+	},
+	deleteKeyPressedHandler: function(keyEvent) {
+		switch (this.state) {
+			case this.states.IDLE: // clear selection
+				obj = this;
+				this.connectedSocket.call('SmartRegionSelector.deleteBlob', [this.idMap[this.targetMarker.id]],
+					function(result) {
+						// update backgroundImage
+						obj.ocanvas.removeChild(obj.targetMarker);
+						obj.idMap.delete(obj.targetMarker.id);
+						obj.targetMarker = null;
+						obj.updateBackground();
+					}
+				);	
+				break;
+		}
+	},
+	
 	isUpdating: false,
 	requeueUpdate: false,
 	updateBackground: function() {
@@ -116,6 +167,32 @@ var SmartRegionSelectorGUI = SmartRegionSelectorGUI || {
 				}
 			);
 		}
-
+	},
+	
+	clearSelection: function(){
+		if (this.targetMarker) {
+			this.targetMarker.stroke = '2px #f90'; // normal settings
+			this.targetMarker.radius = 5;
+		}
+		this.targetMarker = null;
+	},
+	updateSelection: function(marker){
+		this.clearSelection();
+		this.targetMarker = marker; // selection settings
+		this.targetMarker.stroke = '2px #0f0';
+		this.targetMarker.radius = 7;
+	},
+	
+	createMarker: function(x,y){
+		var marker = this.ocanvas.display.arc({
+					x: x,
+					y: y,
+					radius: 4,
+					start: 0,
+					end: 360,
+					fill: '#fff'
+				});
+		this.ocanvas.addChild(marker);
+		return marker;
 	}
 };
