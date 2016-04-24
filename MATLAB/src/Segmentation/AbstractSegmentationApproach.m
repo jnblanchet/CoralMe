@@ -6,7 +6,7 @@ classdef (Abstract) AbstractSegmentationApproach < handle
         image
         resizedImage
         labelMap
-        resizeFactor
+        resizeFactor = -1
     end
     
     methods (Access = protected)        
@@ -17,7 +17,7 @@ classdef (Abstract) AbstractSegmentationApproach < handle
             labels = this.labelMap;
             labels = ~~abs(imfilter(labels,[-1,-1,-1;-1,8,-1;-1,-1,-1], 'same'));
             labels = imresize(labels,s(1:2));
-            labels = imdilate(labels,strel('disk',3));
+            labels = imdilate(labels,strel('disk',5));
             contourImage = zeros(s(1),s(2),4,'uint8');
             contourImage(:,:,1:3) = labels_rgb;
             
@@ -27,17 +27,17 @@ classdef (Abstract) AbstractSegmentationApproach < handle
     end
     
     methods (Access = public)
-        function setImage(this, image, sizeFactor)        
-            if(nargin < 3)
-                sizeFactor = min(1,750 / max(size(image))); % default size
-            elseif sizeFactor > 1
+        function setImage(this, image)        
+            if(this.resizeFactor < 0) % hasn't been defined yet
+                this.resizeFactor = min(1,750 / max(size(image))); % default size
+            elseif this.resizeFactor > 1
                 error('Upscaling image not supported.')
             end
             
             this.image = image;
             % TODO: replace imresize to remove image processing toolbox
             % dependency
-            this.resizedImage = imresize(image, sizeFactor);
+            this.resizedImage = imresize(image, this.resizeFactor);
             
             % call custom invalidation logic
             this.afterImageChanged();
@@ -51,9 +51,14 @@ classdef (Abstract) AbstractSegmentationApproach < handle
             if resizeFactor > 1
                 error('Upscaling image not supported.')
             end
+            if resizeFactor <= 0
+                error('Scale factor should greater than zero.')
+            end
             this.resizeFactor = resizeFactor;
-            this.resizedImage = imresize(image ,resizeFactor);
-            this.afterImageChanged();
+            if ~isempty(this.image)
+                this.resizedImage = imresize(this.image, resizeFactor);
+                this.afterImageChanged();
+            end
         end
         
         function resizeFactor = getResizeFactor(this)

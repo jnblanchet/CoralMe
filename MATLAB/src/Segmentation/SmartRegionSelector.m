@@ -42,7 +42,6 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
         function newBlobId = createBlob(this,x,y,r)
             x = this.toAbsolute(x,size(this.resizedImage,1));
             y = this.toAbsolute(y,size(this.resizedImage,2));
-            r = this.toAbsolute(r,size(this.resizedImage,2));
             if(x < 1 || y < 1 || x > size(this.image,1) || y > size(this.image,2))
                 error('Invalid point position');
             end
@@ -50,21 +49,9 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
             newBlobId = numel(this.Blobs) + 1;
             % estimate a good default size (adaptive)
             if nargin < 4
-                adaptiveSize = 0; counter = 0;
-                for i=1:numel(this.Blobs)
-                    if(isempty(this.Blobs{i}))
-                        continue;
-                    end
-                    adaptiveSize = adaptiveSize + this.Blobs{i}.getRadius();
-                    counter = counter + 1;
-                end
-                if counter == 0
-                    adaptiveSize = 100;
-                else
-                    adaptiveSize = adaptiveSize ./ counter;
-                end
-                r = adaptiveSize;
+                 r = this.getGoodRadiusEstimate();
             end
+            r = this.toAbsolute(r,size(this.resizedImage,2));
             % create blob
             this.Blobs{newBlobId} = Blob(x,y,r,newBlobId,this.nextGroupId());
         end
@@ -74,6 +61,11 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
         function newBlobId = copyBlobToLocation(this, blobId, x, y, r)
             x = this.toAbsolute(x,size(this.resizedImage,1));
             y = this.toAbsolute(y,size(this.resizedImage,2));
+            % estimate a good default size (adaptive)
+            if nargin < 5
+                 r = this.getGoodRadiusEstimate();
+            end
+            r = this.toAbsolute(r,size(this.resizedImage,2));
             
             newBlobId = numel(this.Blobs) + 1;
             this.Blobs{newBlobId} = Blob(x,y,100,newBlobId,this.Blobs{blobId}.getGroupId);
@@ -85,6 +77,8 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
         
         % blobs can be relocated
         function moveBlob(this, blobId, x, y)
+            x = this.toAbsolute(x,size(this.resizedImage,1));
+            y = this.toAbsolute(y,size(this.resizedImage,2));
             this.Blobs{blobId}.moveTo(x,y);
         end
         
@@ -143,6 +137,22 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
         
         function initTextureMap(this, image)
             this.TextureMap = computeTextureMap( image, this.kernelSize);
+        end
+        
+        function r = getGoodRadiusEstimate(this)
+            r = 0; counter = 0;
+            for i=1:numel(this.Blobs)
+                if(isempty(this.Blobs{i}))
+                    continue;
+                end
+                r = r + this.Blobs{i}.getRadius();
+                counter = counter + 1;
+            end
+            if counter == 0
+                r = 100;
+            else
+                r = r ./ counter;
+            end
         end
         
     end

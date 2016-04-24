@@ -49,30 +49,37 @@
 				<select id="selectSegmentationMode">
 					<option value="" selected="selected"></option>
 					<option value="SmartRegionSelector">Smart Region Selector</option>
+					<option value="SuperPixelExtractor">Superpixel Extractor</option>
 				</select>
 			</div>
-				<div class="row">
-					<div class="col-md-3">Kernel size:</div>
-					<div class="col-md-9">|------------X--------| here be sliders</div>
+				<div id='SmartRegionSelectorProperties' class="options" hidden>
+					<div class="row">
+						<div class="col-md-3">Image resize factor (%):</div>
+						<div class="col-md-1"><p id="resizeFactorDisplay"> - </div>
+						<div class="col-md-8"><input type="range" id="resizeFactorRange" min="5" max="100" value="5" /></div>
+					</div>
+					<div class="row">
+						<div class="col-md-3">Kernel size (in pixels):</div>
+						<div class="col-md-1"><p id="kernelSizeDisplay"> - </div>
+						<div class="col-md-8"><input type="range" id="kernelSizeRange"  min="1" max="100" value="1" /></div>
+					</div>
+				</div>
+				<div id="SuperPixelExtractorProperties" class="options" hidden>
+					<div class="row">
+						<div class="col-md-3">Region sensitivity:</div>
+						<div class="col-md-9">|----X----------------|</div>
+					</div>
+					<div class="row">
+						<div class="col-md-3">Number of centers:</div>
+						<div class="col-md-9">|------------------X--|</div>
+					</div>
+					<div class="row">
+						<div class="col-md-3">Regularization:</div>
+						<div class="col-md-9">|---------X-----------|</div>
+					</div>
 				</div>
 				<div class="row">
-					<div class="col-md-3">Image resize factor:</div>
-					<div class="col-md-9">|----X----------------|</div>
-				</div>
-				<div class="row">
-					<div class="col-md-3">Region sensitivity:</div>
-					<div class="col-md-9">|----X----------------|</div>
-				</div>
-				<div class="row">
-					<div class="col-md-3">Number of centers:</div>
-					<div class="col-md-9">|------------------X--|</div>
-				</div>
-				<div class="row">
-					<div class="col-md-3">Regularization:</div>
-					<div class="col-md-9">|---------X-----------|</div>
-				</div>
-				<div class="row">
-					<div class="col-md-9"></div>
+					<div class="col-md-6"></div>
 					<div class="col-md-3">Server working: <img id="loader" src="img/loader.gif" hidden /></div>
 				</div>
 				<div class="row">

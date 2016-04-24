@@ -25,8 +25,14 @@ $(document).ready(function() {
 		event.preventDefault();
 	});
 	
-	// Image selection
+	// Image selection and other parameters
 	$("#selectSegmentationMode").val('');
+	$('#resizeFactorRange').on("change mousemove", function() {
+		$('#resizeFactorDisplay').html($(this).val() + ' %');
+	});
+	$('#kernelSizeRange').on("change mousemove", function() {
+		$('#kernelSizeDisplay').html($(this).val() + ' px');
+	});
 	
 	$('#inputImage').on('change', function(e){
 		var file = e.originalEvent.target.files[0];
@@ -50,22 +56,58 @@ $(document).ready(function() {
 				socket.call(
 					'SmartRegionSelector.isReady', [],
 					function(result) { // On success (server replied)
-						$('#loader').hide();
+						done();
 					},
 					function(error)  { // An error was thrown.
 						alert(error);
 					}
 				);
-				$('#loader').show();
-				renderCanvas();
+				loading();
+				initSmartRegionSelector();
 				break;
 		}
 	});
 	
 });
 
+function initSmartRegionSelector() {
+	// set parameters
+	loading();
+	socket.call('SmartRegionSelector.getResizeFactor', [],
+		function(result) {
+			$("#resizeFactorRange").val(Math.round(result * 100));
+			$('#resizeFactorDisplay').html(Math.round(result*100) + ' %');
+			renderCanvas();
+		}
+	);
+	socket.call('SmartRegionSelector.getKernelSize', [],
+			function(result) {
+				$("#kernelSizeRange").val(result);
+				$('#kernelSizeDisplay').html(result + ' px');
+				renderCanvas();
+				done();
+			}
+		);
+
+	// set binding for futur parameter tuning
+	$("#resizeFactorRange").change(function() {
+		loading();
+		socket.call('SmartRegionSelector.setResizeFactor', [$("#resizeFactorRange").val() / 100],
+			function(result) {done();}
+		);
+	});
+	$("#kernelSizeRange").change(function() {
+		loading();
+		socket.call('SmartRegionSelector.setKernelSize', [$("#kernelSizeRange").val()],
+			function(result) {done();}
+		);
+	});
+	
+	renderCanvas();
+}
+
 var H=0,W=0;
-function renderCanvas() {
+function renderCanvas() {	
 	// check size
 	H = $('#imgWorkingArea').height();
 	W = $('#imgWorkingArea').width();
@@ -82,10 +124,24 @@ function renderCanvas() {
 	});
 	
 	SmartRegionSelectorGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
+	
+	// show and init properties
+	$('.options').hide();
+	$('#SmartRegionSelectorProperties').show();
 }
 
 
 function updateStep(idStep) {
 	$('div[id^=divStep]').hide();
 	$('div[id=divStep' + idStep + ']').show();
+}
+
+function loading() {
+	$('#loader').show();
+	$("input[type='range']").prop('disabled', true);
+}
+
+function done() {
+	$('#loader').hide();
+	$("input[type='range']").prop('disabled', false);
 }
