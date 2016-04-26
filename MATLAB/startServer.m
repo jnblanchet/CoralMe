@@ -16,4 +16,5 @@ try
 catch
 end
 
-% TODO: init vl_feat.
+% init vl_feat
+vl_setup

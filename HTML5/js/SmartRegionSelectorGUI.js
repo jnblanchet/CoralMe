@@ -1,15 +1,24 @@
-var SmartRegionSelectorGUI = SmartRegionSelectorGUI || {
+var SmartRegionSelectorGUI = {
 
 	ocanvas: null, //ref to oCanvas
 	H: [0],
 	W: [0],
 	imgDisplay: '',
-	idMap: new Map(), // a map object mapping local ids to server ids
+	idMap: null, // a map object mapping local ids to server ids
 	states: {IDLE: 1, RESIZING: 2, MOVING: 3},
 	state: null,
 	connectedSocket: null,
 	
 	init: function(ocanvas, H, W, connectedSocket, imgDisplay) {
+		// set all variables to their initial state
+		this.idMap = new Map();
+		this.copyingId = -1;
+		this.selectedMarker = null;
+		this.markerInProgress = null;
+		this.sizeCircle = null;
+		this.isUpdating = false;
+		this.requeueUpdate = false;
+		// set others using arguments
 		this.ocanvas = ocanvas;
 		this.H = H; this.W = W;
 		this.imgDisplay = imgDisplay;

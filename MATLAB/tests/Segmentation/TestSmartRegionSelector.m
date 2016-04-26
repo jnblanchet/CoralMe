@@ -5,8 +5,8 @@ f = imresize(f,0.25); % it's a bit big
 fprintf('Creating SmartRegionSelector with no arguments... ');
 error = false;
 try
-a = SmartRegionSelector([]);
-error = true;
+    a = SmartRegionSelector([]);
+    error = true; % should fail!
 catch
 end
 if error

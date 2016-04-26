@@ -1,5 +1,5 @@
 classdef DisjointSet < handle
-    %DISJOINTSET strcture, useful for id merging
+    %DISJOINTSET structure, useful for id merging
     % Jean-Nicola Blanchet (c) 2016
     
     properties

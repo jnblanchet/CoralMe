@@ -136,7 +136,7 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
         end
         
         function initTextureMap(this, image)
-            this.TextureMap = computeTextureMap( image, this.kernelSize);
+            this.TextureMap = computeTextureMap( this.resizedImage, this.kernelSize);
         end
         
         function r = getGoodRadiusEstimate(this)

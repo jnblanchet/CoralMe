@@ -55,28 +55,40 @@
 				<div id='SmartRegionSelectorProperties' class="options" hidden>
 					<div class="row">
 						<div class="col-md-3">Image resize factor (%):</div>
-						<div class="col-md-1"><p id="resizeFactorDisplay"> - </div>
+						<div class="col-md-1"><p id="resizeFactorDisplay"> - </p></div>
 						<div class="col-md-8"><input type="range" id="resizeFactorRange" min="5" max="100" value="5" /></div>
 					</div>
 					<div class="row">
 						<div class="col-md-3">Kernel size (in pixels):</div>
-						<div class="col-md-1"><p id="kernelSizeDisplay"> - </div>
+						<div class="col-md-1"><p id="kernelSizeDisplay"> - </p></div>
 						<div class="col-md-8"><input type="range" id="kernelSizeRange"  min="1" max="100" value="1" /></div>
 					</div>
 				</div>
 				<div id="SuperPixelExtractorProperties" class="options" hidden>
 					<div class="row">
-						<div class="col-md-3">Region sensitivity:</div>
-						<div class="col-md-9">|----X----------------|</div>
+						<div class="col-md-3">Image resize factor (%):</div>
+						<div class="col-md-1"><p id="resizeFactorSpDisplay"> - </p></div>
+						<div class="col-md-8"><input type="range" id="resizeFactorSpRange" min="5" max="100" value="5" /></div>
 					</div>
 					<div class="row">
-						<div class="col-md-3">Number of centers:</div>
-						<div class="col-md-9">|------------------X--|</div>
+						<div class="col-md-3">Region size (in pixels):</div>
+						<div class="col-md-1"><p id="regionSizeDisplay"> - </p></div>
+						<div class="col-md-8"><input type="range" id="regionSizeRange"  min="10" max="1000" value="10" /></div>
 					</div>
-					<div class="row">
-						<div class="col-md-3">Regularization:</div>
-						<div class="col-md-9">|---------X-----------|</div>
-					</div>
+				<div class="row">
+						<div class="col-md-3">Regularization term (distance weight):</div>
+						<div class="col-md-1"><p id="regularizerDisplay"> - </p></div>
+						<div class="col-md-8"><input type="range" id="regularizerRange"  min="0" max="50" value="0" /></div>
+				</div>
+				<div class="row">
+						<div class="col-md-3">Auto graph cut ratio (%):</div>
+						<div class="col-md-1"><p id="graphCutRatioDisplay"> - </p></div>
+						<div class="col-md-8"><input type="range" id="graphCutRatioRange"  min="0" max="100" value="0" /></div>
+				</div>
+				<div class="row">
+					<div class="col-md-3"><input type="button" id="updateSuperpixelsButton" value="Extract!" /></div>
+					<div class="col-md-9"></p></div>
+				</div>
 				</div>
 				<div class="row">
 					<div class="col-md-6"></div>
@@ -84,8 +96,8 @@
 				</div>
 				<div class="row">
 					<div id="divWorkingArea" class="workingContainer" >
-						<img id="imgWorkingArea"  class="workingContainer" />
-						<img id="imgWorkingAreaOverlay"  class="overlay" />
+						<img id="imgWorkingArea" class="workingContainer" />
+						<img id="imgWorkingAreaOverlay" class="overlay" />
 					</div>
 				</div>
 			</div>

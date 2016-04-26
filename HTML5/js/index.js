@@ -33,6 +33,18 @@ $(document).ready(function() {
 	$('#kernelSizeRange').on("change mousemove", function() {
 		$('#kernelSizeDisplay').html($(this).val() + ' px');
 	});
+	$('#resizeFactorSpRange').on("change mousemove", function() {
+		$('#resizeFactorSpDisplay').html($(this).val() + ' %');
+	});
+	$('#regionSizeRange').on("change mousemove", function() {
+		$('#regionSizeDisplay').html($(this).val() + ' px');
+	});
+	$('#regularizerRange').on("change mousemove", function() {
+		$('#regularizerDisplay').html(Math.round(Math.pow(10,$(this).val() / 10)));
+	});
+	$('#graphCutRatioRange').on("change mousemove", function() {
+		$('#graphCutRatioDisplay').html($(this).val() + ' %');
+	});
 	
 	$('#inputImage').on('change', function(e){
 		var file = e.originalEvent.target.files[0];
@@ -51,19 +63,27 @@ $(document).ready(function() {
 	* Segmentation (step 1)
 	*/
 	$( "#selectSegmentationMode" ).change(function() {
-		switch($('#selectSegmentationMode').val()){
+		switch($('#selectSegmentationMode').val()) {
 			case 'SmartRegionSelector':
 				socket.call(
 					'SmartRegionSelector.isReady', [],
 					function(result) { // On success (server replied)
 						done();
-					},
-					function(error)  { // An error was thrown.
-						alert(error);
+						initSmartRegionSelector();
 					}
 				);
 				loading();
-				initSmartRegionSelector();
+				
+				break;
+			case 'SuperPixelExtractor':
+				socket.call(
+					'SuperPixelExtractor.isReady', [],
+					function(result) {
+						initSuperPixelExtractor();
+						done();
+					}
+				);
+				loading();
 				break;
 		}
 	});
@@ -77,14 +97,12 @@ function initSmartRegionSelector() {
 		function(result) {
 			$("#resizeFactorRange").val(Math.round(result * 100));
 			$('#resizeFactorDisplay').html(Math.round(result*100) + ' %');
-			renderCanvas();
 		}
 	);
 	socket.call('SmartRegionSelector.getKernelSize', [],
 			function(result) {
 				$("#kernelSizeRange").val(result);
 				$('#kernelSizeDisplay').html(result + ' px');
-				renderCanvas();
 				done();
 			}
 		);
@@ -92,14 +110,14 @@ function initSmartRegionSelector() {
 	// set binding for futur parameter tuning
 	$("#resizeFactorRange").change(function() {
 		loading();
-		socket.call('SmartRegionSelector.setResizeFactor', [$("#resizeFactorRange").val() / 100],
-			function(result) {done();}
+		socket.call('SmartRegionSelector.setResizeFactor', [parseInt($("#resizeFactorRange").val()) / 100],
+			function(result) {renderCanvas(); done();}
 		);
 	});
 	$("#kernelSizeRange").change(function() {
 		loading();
-		socket.call('SmartRegionSelector.setKernelSize', [$("#kernelSizeRange").val()],
-			function(result) {done();}
+		socket.call('SmartRegionSelector.setKernelSize', [parseInt($("#kernelSizeRange").val())],
+			function(result) {renderCanvas(); done();}
 		);
 	});
 	
@@ -107,6 +125,7 @@ function initSmartRegionSelector() {
 }
 
 var H=0,W=0;
+var canvas = null;
 function renderCanvas() {	
 	// check size
 	H = $('#imgWorkingArea').height();
@@ -114,11 +133,15 @@ function renderCanvas() {
 	
 	// add fresh canvas of the correct size
 	$('#canvasWorkingArea').remove();
+	$('#imgWorkingAreaOverlay').attr('src', '');
 	var newCanvas = $('<canvas id="canvasWorkingArea" class="overlay" width="' + W + '" height="' + H + '" />');
 	$('#imgWorkingAreaOverlay').after(newCanvas);
 	$('body').on('contextmenu', '#canvasWorkingArea', function(e){ return false; });
 	
-	var canvas = oCanvas.create({
+	if(canvas)
+		canvas.destroy();
+	
+	canvas = oCanvas.create({
 		canvas: '#canvasWorkingArea',
 		fps: 30
 	});
@@ -128,6 +151,82 @@ function renderCanvas() {
 	// show and init properties
 	$('.options').hide();
 	$('#SmartRegionSelectorProperties').show();
+}
+
+function initSuperPixelExtractor() {	
+	// set parameters
+	loading();
+	socket.call('SuperPixelExtractor.getResizeFactor', [],
+		function(result) {
+			$("#resizeFactorSpRange").val(Math.round(result * 100));
+			$('#resizeFactorSpDisplay').html(Math.round(result*100) + ' %');
+		}
+	);
+	socket.call('SuperPixelExtractor.getRegionSize', [],
+			function(result) {
+				$("#regionSizeRange").val(result);
+				$('#regionSizeDisplay').html(result + ' px');
+				done();
+			}
+		);
+	socket.call('SuperPixelExtractor.getRegularizer', [],
+			function(result) {
+				$("#regularizerRange").val(Math.round(Math.log(result)/0.23025)); // log(10) * 1/10 (log base conversion * slider multiplier)
+				$('#regularizerDisplay').html(Math.round(result));
+				done();
+			}
+		);
+	socket.call('SuperPixelExtractor.getGraphCutRatio', [],
+			function(result) {
+			$("#graphCutRatioRange").val(Math.round(result * 100));
+			$('#graphCutRatioDisplay').html(Math.round(result*100) + ' %');
+				done();
+			}
+		);
+		
+	// set binding for futur parameter tuning
+	$("#resizeFactorSpRange").change(function() {
+		loading();
+		socket.call('SuperPixelExtractor.setResizeFactor', [parseInt($("#resizeFactorSpRange").val()) / 100],
+			function(result) { done();}
+		);
+	});
+	$("#regionSizeRange").change(function() {
+		loading();
+		socket.call('SuperPixelExtractor.setRegionSize', [parseInt($("#regionSizeRange").val())],
+			function(result) { done(); }
+		);
+	});
+	$("#regularizerRange").change(function() {
+		loading();
+		socket.call('SuperPixelExtractor.setRegularizer', [Math.pow(10,parseInt($("#regularizerRange").val()) / 10)],
+			function(result) { done(); }
+		);
+	});
+	$("#graphCutRatioRange").change(function() {
+		loading();
+		socket.call('SuperPixelExtractor.setGraphCutRatio', [parseInt($("#graphCutRatioRange").val()) / 100],
+			function(result) { done(); }
+		);
+	});
+	// empty the overlay
+	$('#imgWorkingAreaOverlay').attr('src', '');
+	
+	// bind button to update
+	$('#updateSuperpixelsButton').click(function() {
+		loading();
+		socket.call('SuperPixelExtractor.getMap', [],
+			function(result) {
+				$('#imgWorkingAreaOverlay').attr("src", result);
+				done();
+			}
+		);
+	});
+
+
+	// show and init properties
+	$('.options').hide();
+	$('#SuperPixelExtractorProperties').show();
 }
 
 

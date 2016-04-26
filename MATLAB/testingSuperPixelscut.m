@@ -7,7 +7,7 @@ imlab = vl_xyz2lab(vl_rgb2xyz(f)) ;
 % extract super pixels
 regionSize = 100 ;
 regularizer = 200;
-segments = vl_slic(single(imlab), regionSize, regularizer) + 1;
+segments = vl_slic(single(imlab), regionSize, regularizer,'MinRegionSize',(.5*regionSize)^2) + 1;
 
 % extract texture map
 im_g = rgb2gray(f);
@@ -24,10 +24,12 @@ colorMap = uint8(hsv(:,:,1)*(numBins-1));
 % extract feature vector for each cell
 n = max(segments(:));
 features = zeros(n,2*numBins);
-
+weights = zeros(n,1);
 for i=1:n
-    features(i,1:numBins) = hist(lbpMap(segments == i),0:numBins-1);
-    features(i,numBins+1:2*numBins) = hist(colorMap(segments == i),0:numBins-1)';
+    map = segments == i;
+    weights(i) = sum(map(:));
+    features(i,1:numBins) = hist(lbpMap(map),0:numBins-1);
+    features(i,numBins+1:2*numBins) = hist(colorMap(map),0:numBins-1)';
 end
 
 % normalize Features
@@ -49,7 +51,7 @@ for i = 2:h
 end
 
 % evaluate cost
-cost = zeros(n);
+cost = ones(n) * Inf;
 for i = 1:n
     for j = i+1:n
         if isConnected(i,j)
@@ -62,21 +64,49 @@ for i = 1:n
     end
 end
 
-% create index
-[val,id] = sort(cost(:));
-map = val~=0;
-val = val(map);
-id = id(map);
+% loop cut
 index = DisjointSet(n);
-
-% generate display (iterative cuts)
 segments_k = segments;
-for k = 1:numel(id)
-    % apply cut
-    [i,j] = ind2sub([n,n],id(k));
+
+while(true)
+    [val,id] = min(cost(:));
+   % apply cut
+    [i,j] = ind2sub([n,n],id);
+    cost(i,j) = Inf; cost(j,i) = Inf; % cannot merge anymore!
+    display(sprintf('attempting to merge %d with %d with score=%.2f',i,j,log(val)))
     i = index.find(i);
     j = index.find(j);
+    i = index.find(i); j = index.find(j);
     newId = index.union(i,j);
+    % update cost
+    for x=n:-1:1
+        % row
+        if ~isinf(cost(i,x)) && ~isinf(cost(j,x))
+            newRowVal(x) = (cost(i,x) * weights(i) + cost(j,x) * weights(j)) ./ (weights(i) + weights(j));
+        elseif isinf(cost(i,x)) && ~isinf(cost(j,x))
+            newRowVal(x) = cost(j,x);
+        elseif ~isinf(cost(i,x)) && isinf(cost(j,x))
+            newRowVal(x) = cost(i,x);
+        else
+            newRowVal(x) = Inf;
+        end
+        
+        %col
+        if ~isinf(cost(x,i)) && ~isinf(cost(x,j))
+            newColVal(x) = (cost(x,i) * weights(i) + cost(x,j) * weights(j)) ./ (weights(i) + weights(j));
+        elseif isinf(cost(x,i)) && ~isinf(cost(x,j))
+            newColVal(x) = cost(x,j);
+        elseif ~isinf(cost(x,i)) && isinf(cost(x,j))
+            newColVal(x) = cost(x,i);
+        else
+            newColVal(x) = Inf;
+        end
+    end
+    
+    weights(newId) = weights(i) + weights(j);
+    cost(newId,:) = newRowVal;
+    cost(:,newId) = newColVal;
+    % update segment
     segments_k(segments_k == i | segments_k == j) = newId;
     % generate display
     s = size(f);
