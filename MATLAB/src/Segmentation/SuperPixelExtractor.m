@@ -15,7 +15,16 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
     
     methods (Access = public)
         % Constructor
-        function this = SuperPixelExtractor(image)
+        function this = SuperPixelExtractor(image, segMap)
+            if nargin < 1 || isempty(image)
+                error('Invalid image argument.');
+            end
+            if nargin < 2 || isempty(segMap)
+                this.segMap = SegmentationMap();
+            else
+                this.segMap = segMap;
+            end
+            
             this.regionSize = 200;
             this.regularizer = 400;
             this.graphCutRatio = 0;
@@ -67,13 +76,13 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
         end
         
         function [contourImage] = getMap(this)
-            this.labelMap = vl_slic(single(this.resizedImage), this.regionSize, this.regularizer) + 1;
+            labelMap = vl_slic(single(this.resizedImage), this.regionSize, this.regularizer) + 1;
             
             if this.graphCutRatio > 0
-                this.labelMap = this.cutGraph(this.labelMap);
+                labelMap = this.cutGraph(labelMap);
             end 
-            
-            contourImage = this.getContourImage();
+            this.segMap.setMap(labelMap);
+            contourImage = this.segMap.getContourImage();
         end
         
     end

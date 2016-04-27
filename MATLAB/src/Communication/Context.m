@@ -6,12 +6,16 @@ classdef Context < handle
         image
         % Map that contains all instances of all CoralMeTools
         % (needs to be flushed when image is changed)
-        CoralMeMap
+        CoralMeKeyValueMap
     end
+    properties (Access = public)
+        segMap % used to keep a common handle on segmentation map between objects
+    end
+    
     
     methods (Access = public)
         function this = Context()
-            this.CoralMeMap = containers.Map('KeyType','char','ValueType','any');
+            this.CoralMeKeyValueMap = containers.Map('KeyType','char','ValueType','any');
         end
         
         function ready = isReady(this)
@@ -30,8 +34,8 @@ classdef Context < handle
             className = split{1}; method = split{2};
 
             % get the target class instance (or create one)
-            if this.CoralMeMap.isKey(className);
-                instance = this.CoralMeMap(className);
+            if this.CoralMeKeyValueMap.isKey(className);
+                instance = this.CoralMeKeyValueMap(className);
             else
 %                 try
                     instance = coralMeFactory(this, className);
@@ -40,7 +44,7 @@ classdef Context < handle
 %                     errorStruct.code = jsonrpc2.JSONRPC2Error.JSON_INTERNAL_ERROR;
 %                     error(errorStruct)
 %                 end
-                this.CoralMeMap(className) = instance;
+                this.CoralMeKeyValueMap(className) = instance;
             end
             
             % make sure it's really a method
@@ -94,12 +98,13 @@ classdef Context < handle
         function setImage(this, image)
             flushAllObjects(this);
             this.image = image;
+            this.segMap = SegmentationMap();
         end
     end
     
     methods (Access = private)        
         function flushAllObjects(this)
-            this.CoralMeMap = containers.Map('KeyType','char','ValueType','any');
+            this.CoralMeKeyValueMap = containers.Map('KeyType','char','ValueType','any');
         end
     end
     

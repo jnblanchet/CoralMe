@@ -16,19 +16,23 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
     
     methods (Access = public)
         % Constructor
-        function this = SmartRegionSelector(image, kernelSize)
+        function this = SmartRegionSelector(image, segMap, kernelSize)
             % checks
             if nargin < 1 || isempty(image)
                 error('Invalid image argument.');
             end
+            if nargin < 2 || isempty(segMap)
+                segMap = SegmentationMap();
+            end
             if size(image,3) ~= 3
                 error('Expected MxNx3 image argument.');
             end
-            if nargin < 2 || kernelSize <= 0
-                kernelSize = 20; % default value
+            if nargin < 3 || kernelSize <= 0
+                kernelSize = 20; % default value1
             end
             
             % initialize
+            this.segMap = segMap;
             this.currentGroupId = 0;
             this.kernelSize = kernelSize;
             this.Blobs = {};
@@ -99,8 +103,8 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
             valid = blobId >= 1 && blobId <= numel(this.Blobs) && ~isempty(this.Blobs{blobId});
         end
         
-        % get the resulting segmentation maps for display, access the
-        % this.labelMap (index map) property for feature extraction.
+        % get the resulting segmentation maps for display, use the
+        % this.getLabelMap (index map) method for feature extraction.
         function [contourImage] = getMap(this)
             labelMap = zeros(size(this.TextureMap,1),size(this.TextureMap,2),'uint16');
             for i=1:numel(this.Blobs)
@@ -113,7 +117,7 @@ classdef SmartRegionSelector < AbstractSegmentationApproach
                 tmpCrop(mask) = this.Blobs{i}.getGroupId();
                 labelMap(box(1):box(2),box(3):box(4)) = tmpCrop;
             end
-            this.labelMap = labelMap;
+            this.segMap.setMap(labelMap);
             contourImage = this.getContourImage();
         end
         

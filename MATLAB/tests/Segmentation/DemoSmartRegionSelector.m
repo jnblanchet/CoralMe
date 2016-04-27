@@ -11,7 +11,7 @@
 % f = imread('AIMS_demo.JPG');
 % f = imresize(f,500/max(size(f)));
 f = imread('MLC_demo.JPG');
-f = imresize(f,1000/max(size(f)));
+f = imresize(f,750/max(size(f)));
 selector = SmartRegionSelector(f);
 imshow(f);
 
@@ -53,14 +53,14 @@ while(true)
         end
     end
 
-    [~, contourImage] = selector.getMap();
+    contourImage = selector.getMap();
     if selector.isValidBlobId(selectedId)
         pos = selector.Blobs{selectedId}.getPos();
         contourImage = insertMarker(contourImage,[pos(2) pos(1)], 'o','color','green','size',5);
 %         insertMarker(contourImage,pos,'x','color','green','size',100);
 %         contourImage = insertShape(contourImage, 'FilledRectangle', [pos(2) pos(1) 20 20], 'LineWidth', 10);
     end
-    imshow(contourImage);
+    imshow(f .* uint8(~contourImage(:,:,[4 4 4])) + contourImage(:,:,1:3) .* contourImage(:,:,[4 4 4]));
     drawnow
     
     %     imageHandle = get(gca,'Children');

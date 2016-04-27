@@ -12,10 +12,10 @@ function instance = coralMeFactory(context, className)
                 instance = context;
             case 'SmartRegionSelector'
                 requiresImage(context);
-                instance = SmartRegionSelector(context.getImage());
+                instance = SmartRegionSelector(context.getImage(), context.segMap);
             case 'SuperPixelExtractor'
                 requiresImage(context);
-                instance = SuperPixelExtractor(context.getImage());
+                instance = SuperPixelExtractor(context.getImage(), context.segMap);
             otherwise
                 error('coralMeFactory.m does not allow this class to be created.')
         end

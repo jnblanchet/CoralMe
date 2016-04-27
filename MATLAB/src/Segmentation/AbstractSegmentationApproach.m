@@ -5,24 +5,13 @@ classdef (Abstract) AbstractSegmentationApproach < handle
     properties (Access = protected)
         image
         resizedImage
-        labelMap
+        segMap
         resizeFactor = -1
     end
     
     methods (Access = protected)        
-        function contourImage = getContourImage(this)
-            s = size(this.image);
-            labels_rgb = label2rgb(uint8(this.labelMap),'jet','k');
-            labels_rgb = imresize(labels_rgb,s(1:2),'nearest');
-            labels = this.labelMap;
-            labels = ~~abs(imfilter(labels,[-1,-1,-1;-1,8,-1;-1,-1,-1], 'same'));
-            labels = imresize(labels,s(1:2));
-            labels = imdilate(labels,strel('disk',5));
-            contourImage = zeros(s(1),s(2),4,'uint8');
-            contourImage(:,:,1:3) = labels_rgb;
-            
-            % 4th channel is transparency
-            contourImage(:,:,4) = uint8(labels(:,:,1));
+        function contourImage = getContourImage(this)            
+            contourImage = this.segMap.getContourImage();
         end
     end
     
@@ -66,7 +55,7 @@ classdef (Abstract) AbstractSegmentationApproach < handle
         end
         
         function labelMap = getLabelMap(this)
-            labelMap = this.labelMap;
+            labelMap = this.segMap.getMap;
         end
     end
     
