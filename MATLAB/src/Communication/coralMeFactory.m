@@ -16,6 +16,9 @@ function instance = coralMeFactory(context, className)
             case 'SuperPixelExtractor'
                 requiresImage(context);
                 instance = SuperPixelExtractor(context.getImage(), context.segMap);
+            case 'GraphCutMergeTool'
+                requiresSegmentationMap(context);
+                instance = GraphCutMergeTool(context.segMap);
             otherwise
                 error('coralMeFactory.m does not allow this class to be created.')
         end
@@ -24,5 +27,11 @@ end
 function requiresImage(context)
     if isempty(context.getImage())
         error('Image has not yet been set. Call Context.setImage(image) first.');
+    end
+end
+
+function requiresSegmentationMap(context)
+    if isempty(context.segMap)
+        error('Image has not yet been segmented. Use other tools first (e.g. SuperpixelExtractor).');
     end
 end

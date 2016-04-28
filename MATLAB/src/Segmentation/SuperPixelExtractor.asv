@@ -19,6 +19,8 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
             if nargin < 1 || isempty(image)
                 error('Invalid image argument.');
             end
+            this = this@AbstractSegmentationApproach(image);
+            
             if nargin < 2 || isempty(segMap)
                 this.segMap = SegmentationMap();
             else
@@ -35,7 +37,7 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
         % redefining setImage to use Lab space
         function setImage(this, image)
             if(this.resizeFactor < 0) % hasn't been defined yet
-                this.resizeFactor = min(1,750 / max(size(image))); % default size
+                this.resizeFactor = 1.0; % default size
             elseif this.resizeFactor > 1
                 error('Upscaling image not supported.')
             end

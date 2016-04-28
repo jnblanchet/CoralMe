@@ -58,7 +58,7 @@ $(document).ready(function() {
 		};
 		reader.readAsDataURL(file); //base64 format
 	});
-	
+
 	/*
 	* Segmentation (step 1)
 	*/
@@ -87,6 +87,18 @@ $(document).ready(function() {
 				break;
 		}
 	});
+	$('#doneSegmentationButton').click(function() {
+		updateStep(3);
+		jQuery("#divWorkingArea").detach().appendTo('#divWorkingArea2'); // keep background image
+		$('#canvasWorkingArea').remove(); // remove any existing canvas
+		renderCanvas(2, 'imgWorkingAreaOverlay');
+	});
+	
+	/*
+	 * Segmentation (step 2)
+	 */
+		
+	
 	
 });
 
@@ -107,33 +119,32 @@ function initSmartRegionSelector() {
 			}
 		);
 
-	// set binding for futur parameter tuning
+	// set binding for future parameter tuning
 	$("#resizeFactorRange").change(function() {
 		loading();
 		socket.call('SmartRegionSelector.setResizeFactor', [parseInt($("#resizeFactorRange").val()) / 100],
-			function(result) {renderCanvas(); done();}
+			function(result) {renderCanvas(1); done();}
 		);
 	});
 	$("#kernelSizeRange").change(function() {
 		loading();
 		socket.call('SmartRegionSelector.setKernelSize', [parseInt($("#kernelSizeRange").val())],
-			function(result) {renderCanvas(); done();}
+			function(result) {renderCanvas(1); done();}
 		);
 	});
 	
-	renderCanvas();
+	renderCanvas(1);
 }
 
 var H=0,W=0;
 var canvas = null;
-function renderCanvas() {	
+function renderCanvas(stepId) {	
 	// check size
 	H = $('#imgWorkingArea').height();
 	W = $('#imgWorkingArea').width();
 	
 	// add fresh canvas of the correct size
 	$('#canvasWorkingArea').remove();
-	$('#imgWorkingAreaOverlay').attr('src', '');
 	var newCanvas = $('<canvas id="canvasWorkingArea" class="overlay" width="' + W + '" height="' + H + '" />');
 	$('#imgWorkingAreaOverlay').after(newCanvas);
 	$('body').on('contextmenu', '#canvasWorkingArea', function(e){ return false; });
@@ -146,11 +157,16 @@ function renderCanvas() {
 		fps: 30
 	});
 	
-	SmartRegionSelectorGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
-	
-	// show and init properties
-	$('.options').hide();
-	$('#SmartRegionSelectorProperties').show();
+	if (stepId == 1) {
+		$('#imgWorkingAreaOverlay').attr('src', '');
+		SmartRegionSelectorGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
+		// show and init properties
+		$('.options').hide();
+		$('#SmartRegionSelectorProperties').show();
+	}
+	else if(stepId == 2){
+		GraphCutMergeToolGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
+	}
 }
 
 function initSuperPixelExtractor() {	

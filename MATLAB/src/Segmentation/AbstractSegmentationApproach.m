@@ -66,7 +66,7 @@ classdef (Abstract) AbstractSegmentationApproach < handle
     methods (Access = protected)
         function y = toAbsolute(this, x, ref)
             if(x < 1.0)
-                y = round(x * ref);
+                y = round(x * ref) + 1;
             else
                 y = round(x);
             end

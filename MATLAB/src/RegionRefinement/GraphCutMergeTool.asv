@@ -64,7 +64,7 @@ classdef GraphCutMergeTool < AbstractSegmentationTool
             endY = this.toAbsolute(endY, size(map,2));
             
             % snap to edges if close
-            t = .02 * size(map,1); % pixel threshold
+            t = .05 * size(map,1); % pixel threshold
             startX = this.snapToSides(startX, t, size(map,1));
             endX = this.snapToSides(endX, t, size(map,1));
             startY = this.snapToSides(startY, t, size(map,2));
@@ -73,8 +73,7 @@ classdef GraphCutMergeTool < AbstractSegmentationTool
             steps = max(abs(endY - startY),abs(endX - startX));
             X = round(((endX-startX)/steps) * (-1:steps) + startX);
             Y = round(((endY-startY)/steps) * (-1:steps) + startY);
-            filter = (X > 0 & X <= size(map,1)) & (Y > 0 & Y <= size(map,2));
-            X = X(filter); Y = Y(filter);
+            X = X(X > 0 & X < 
             line = sub2ind(size(map), X, Y);
         end
         

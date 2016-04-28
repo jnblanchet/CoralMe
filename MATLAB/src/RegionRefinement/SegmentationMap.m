@@ -31,7 +31,7 @@ classdef SegmentationMap < handle
             map = this.map;
         end
         function setMap(this, map)
-            this.map = map;
+            this.map = uint16(map); % unit8 doesn't support more than 256 regions!
         end
     end
     

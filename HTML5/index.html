@@ -100,11 +100,18 @@
 						<img id="imgWorkingAreaOverlay" class="overlay" />
 					</div>
 				</div>
+				<div class="row">
+					<br />
+					<input type="button" id="doneSegmentationButton" value="Onto step 2!" />
+				</div>
 			</div>
 			<div class="container" id="divStep3">
 			<h2>2 - Region refinement</h2>
-			
+			<div class="row">
+				<div class="col-md-6"></div>
+				<div class="col-md-3">Server working: <img id="loader" src="img/loader.gif" hidden /></div>
 			</div>
+			<div class="row" id="divWorkingArea2"></div>
 			<div class="container" id="divStep4">
 			<h2>3 - Annotation</h2>
 			</div>
@@ -114,6 +121,7 @@
 		<script src="js/jquery.jsonrpcclient.js"></script>
 		<script src="js/ocanvas-2.8.3.min.js"></script>
 		<script src="js/SmartRegionSelectorGUI.js"></script>
+		<script src="js/GraphCutMergeToolGUI.js"></script>
 		<script src="js/index.js"></script>
 
 	</body>

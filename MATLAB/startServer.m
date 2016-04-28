@@ -4,6 +4,7 @@
 % "javaaddpath" may not work. Use "edit('classpath.txt')", and insert a
 % new line containing the result of this call:
 % "[pwd filesep 'lib' filesep 'TCP' filesep 'matlabwebsocket.jar']"
+% (a matlab restart will be needed
 
 addpath(genpath(pwd));
 
