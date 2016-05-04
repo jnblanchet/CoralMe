@@ -2,7 +2,7 @@ classdef (Abstract) AbstractSegmentationTool < handle
     %ABSTRACTSEGMENTATIONAPPROACH Contains useful methods for all
     %segmentation refinement tools.
     
-    properties (Access = protected)
+    properties (Access = public)
         segMap
     end
     
