@@ -9,13 +9,20 @@ function instance = coralMeFactory(context, className)
         
         switch className
             case 'Context'
-                instance = context;
+                instance = context; 
             case 'SmartRegionSelector'
                 requiresImage(context);
                 instance = SmartRegionSelector(context.getImage(), context.segMap);
             case 'SuperPixelExtractor'
                 requiresImage(context);
                 instance = SuperPixelExtractor(context.getImage(), context.segMap);
+            case 'GraphCutMergeTool'
+                requiresSegmentationMap(context);
+                instance = GraphCutMergeTool(context.segMap);
+            case 'UnassignedPixelRefinement'
+                requiresImage(context);
+                requiresSegmentationMap(context);
+                instance = UnassignedPixelRefinement(context.getImage(),context.segMap);
             otherwise
                 error('coralMeFactory.m does not allow this class to be created.')
         end
@@ -29,6 +36,6 @@ end
 
 function requiresSegmentationMap(context)
     if isempty(context.segMap)
-        error('Image has not yet been segmented. Use other tools first (e.g. SuperpixelExtractor).');
+        error('Image has not yet been segmented yet and the segmentation cannot be refined. Use other tools first (e.g. SuperpixelExtractor).');
     end
 end
