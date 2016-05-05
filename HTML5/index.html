@@ -107,6 +107,26 @@
 			</div>
 			<div class="container" id="divStep3">
 			<h2>2 - Region refinement</h2>
+			<ol>
+				<li>
+					Use drag clicks to refine the image below (left = merge, right = split).
+				</li>
+				<li>
+					OR, You can also use the unassigned pixel segmentation refinement tool below:
+				</li>
+			</ol>
+			<div class="row">
+				<div class="col-md-3">Regularization term (distance weight):</div>
+				<div class="col-md-1"><p id="regularizerUnassignedDisplay"> - </p></div>
+				<div class="col-md-8"><input type="range" id="regularizerUnassignedRange"  min="-50" max="50" value="10" /></div>
+			</div>
+			<div class="row">
+				<div class="col-md-3"><input type="button" id="UnassignedPixelsButton" value="I'm feeling lucky!" /></div>
+				<div class="col-md-9"></p></div>
+			</div>
+			<div class="row">
+			
+			</div>
 			<div class="row">
 				<div class="col-md-6"></div>
 				<div class="col-md-3">Server working: <img id="loader" src="img/loader.gif" hidden /></div>

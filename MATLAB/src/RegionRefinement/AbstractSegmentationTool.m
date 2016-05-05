@@ -24,5 +24,14 @@ classdef (Abstract) AbstractSegmentationTool < handle
                 y = round(x);
             end
         end
+        
+        function fixIds(this)
+            % consolidate ids
+            labelMap = this.segMap.getMap();
+            u = unique(labelMap);
+            LUT = zeros(max(u),1);
+            LUT(u+1) = (1:numel(u)) - 1;
+            this.segMap.setMap(LUT(labelMap+1));
+        end
     end
 end

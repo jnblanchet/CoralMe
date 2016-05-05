@@ -34,8 +34,8 @@ error = false;
 
 newMap = a.assignFreePixels(0.25);
 m = a.segMap.getMap();
-if(m(666,313) ~= 8)
-    error = true
+if(m(666,313) ~= m(400,400))
+    error = true;
 end
 
 if error

@@ -76,8 +76,7 @@ classdef GraphCutMergeTool < AbstractSegmentationTool
             filter = (X > 0 & X <= size(map,1)) & (Y > 0 & Y <= size(map,2));
             X = X(filter); Y = Y(filter);
             line = sub2ind(size(map), X, Y);
-        end
-        
+        end        
         
         function y = snapToSides(this, x, t, lim)
             if x < t

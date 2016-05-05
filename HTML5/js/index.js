@@ -95,9 +95,18 @@ $(document).ready(function() {
 	});
 	
 	/*
-	 * Segmentation (step 2)
+	 * Segmentation refinement(step 2)
 	 */
-		
+	$('#regularizerUnassignedRange').on("change mousemove", function() {
+		$('#regularizerUnassignedDisplay').html('10^' + $(this).val() / 10);
+	});
+	
+	$('#UnassignedPixelsButton').click(function() {
+		loading();
+		socket.call('UnassignedPixelRefinement.assignFreePixels', [Math.pow(10,parseInt($('#regularizerUnassignedRange').val()) / 10)],
+			function(result) { done(); $('#imgWorkingAreaOverlay').attr("src", result); }
+		);
+	});
 	
 	
 });
@@ -166,6 +175,9 @@ function renderCanvas(stepId) {
 	}
 	else if(stepId == 2){
 		GraphCutMergeToolGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
+		
+		// also setup unassigned pixel refinement tool!
+		
 	}
 }
 

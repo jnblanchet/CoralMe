@@ -6,22 +6,25 @@ classdef UnassignedPixelRefinement < AbstractSegmentationTool
         textureMap
         positionModels
         textureModels
+        image
     end
     
     
     methods (Access = public)
         % Constructor
         function this = UnassignedPixelRefinement(image, segMap)
+            this.image = image;
             if nargin < 1 || isempty(image) || isempty(image)
                 error('A valid image must be specified.');
             end
             this.segMap = segMap;
+            this.fixIds();
             this.unlabeledPoints = find(segMap.getMap() <= 0);
             
             if nargin < 1 || isempty(segMap) || isempty(segMap.getMap())
                 error('A valid segmentation map must be specified.');
             end
-            this.segMap.setMap(imresize(segMap.getMap(),[size(image,1),size(image,2)],'nearest'));
+            %this.segMap.setMap(imresize(segMap.getMap(),[size(image,1),size(image,2)],'nearest'));
             this.cacheTextureFeatures(image);
         end
         
@@ -63,6 +66,7 @@ classdef UnassignedPixelRefinement < AbstractSegmentationTool
             
             % assign to new map
             newMap(this.unlabeledPoints) = this.classes(newLabels);
+            newMap = medfilt2(newMap, [25,25]);
             this.segMap.setMap(newMap);
             contourImage = this.segMap.getContourImage();
         end
