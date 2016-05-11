@@ -31,7 +31,34 @@ classdef SegmentationMap < handle
             map = this.map;
         end
         function setMap(this, map)
-            this.map = uint16(map); % unit8 doesn't support more than 256 regions!
+            this.map = int32(map); % unit8 doesn't support more than 256 regions!
+        end
+        
+        function fixIds(this)
+            % consolidate ids
+            u = unique(this.map);
+            
+            restoreBg = false;
+            if sum(u<=0) > 0 %handle background class
+                this.map = this.map + 1;
+                u = u + 1;
+                restoreBg = true;
+            end
+            
+            LUT = zeros(max(u),1);
+            LUT(u) = (1:numel(u));
+            this.map = LUT(this.map);
+            
+            if restoreBg %restore background class
+                this.map = this.map - 1;
+            end
+        end
+        
+        function colorLegend = getColors(this)
+            classes = unique(this.map);
+            colorLegend = squeeze(label2rgb(classes,'jet','k'));
+            % filter out non zeros classes
+            colorLegend = colorLegend(classes > 0,:);
         end
     end
     
