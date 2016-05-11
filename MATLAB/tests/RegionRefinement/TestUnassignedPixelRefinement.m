@@ -29,7 +29,7 @@ else
     fprintf('PASSED\n');
 end
 
-fprintf('Checking if result is reasonable... ');
+fprintf('Checking if result seems good for obvious pixels... ');
 error = false;
 
 newMap = a.assignFreePixels(0.25);
