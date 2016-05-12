@@ -9,14 +9,14 @@ function filterReponse = coralApplyFilters(I, filterMeta)
 %  Copyright notice: license.txt
 %  Changelog: changelog.txt
 
-global GlobalUseGpuFlag;
+persistent useGpuFlag;
 
-if(isempty(GlobalUseGpuFlag))
+if(isempty(useGpuFlag))
     try
         gpuDevice;
-        GlobalUseGpuFlag = true;
+        useGpuFlag = true;
     catch
-        GlobalUseGpuFlag = false;
+        useGpuFlag = false;
     end
 end
 
@@ -26,14 +26,14 @@ nbrOriented = filterMeta.nbrOriented * 2;
 nbrCircular = filterMeta.nbrCircular * 2;
 nbrFilters = nbrOriented + nbrCircular;
 
-if GlobalUseGpuFlag == 1
+if useGpuFlag == 1
     FI = gpuImFilt(I,F, false);
 else
     FI = fft_filt_2(I, F, 1);
 end
 
 tmp = zeros(size(FI, 1), size(FI, 2), nbrFilters);
-if GlobalUseGpuFlag == 1
+if useGpuFlag == 1
     FIC = gpuArray(tmp);
 else
     FIC = tmp;
@@ -52,7 +52,7 @@ end
 % normalize according to Fowles.
 L = sqrt(sum(FIC.^2, 3));
 FIC = FIC.*repmat(log(1 + L./.03) ./ L, [1 1 size(FIC, 3)]);
-if GlobalUseGpuFlag == 1
+if useGpuFlag == 1
     filterReponse = gather(FIC);
 else
     filterReponse = FIC;
