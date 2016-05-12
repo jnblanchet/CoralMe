@@ -19,3 +19,9 @@ end
 
 % init vl_feat
 vl_setup
+
+% init vl_featnn (matconvnet for deep learning)
+try
+    vl_setupnn
+catch
+end
