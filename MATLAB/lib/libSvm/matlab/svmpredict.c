@@ -213,7 +213,7 @@ void predict(mxArray *plhs[], const mxArray *prhs[], struct svm_model *model, co
 		sumpt += predict_label*target_label;
 		++total;
 	}
-	if(svm_type==NU_SVR || svm_type==EPSILON_SVR)
+	/*if(svm_type==NU_SVR || svm_type==EPSILON_SVR)
 	{
 		mexPrintf("Mean squared error = %g (regression)\n",error/total);
 		mexPrintf("Squared correlation coefficient = %g (regression)\n",
@@ -223,7 +223,7 @@ void predict(mxArray *plhs[], const mxArray *prhs[], struct svm_model *model, co
 	}
 	else
 		mexPrintf("Accuracy = %g%% (%d/%d) (classification)\n",
-			(double)correct/total*100,correct,total);
+			(double)correct/total*100,correct,total);*/
 
 	// return accuracy, mean squared error, squared correlation coefficient
 	plhs[1] = mxCreateDoubleMatrix(3, 1, mxREAL);

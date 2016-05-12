@@ -15,12 +15,12 @@ try
 		mex CFLAGS="\$CFLAGS -std=c99" -largeArrayDims libsvmwrite.c
         
         %openMP compiler flags for Visual Studio 2010 compile on Windows
-		%mex -v CFLAGS="\$CFLAGS -std=c99" COMPFLAGS="$COMPFLAGS /openmp" -largeArrayDims svmtrain.c ../svm.cpp svm_model_matlab.c
-		%mex -v CFLAGS="\$CFLAGS -std=c99" COMPFLAGS="$COMPFLAGS /openmp" -largeArrayDims svmpredict.c ../svm.cpp svm_model_matlab.c
+		mex -v CFLAGS="\$CFLAGS -std=c99" COMPFLAGS="$COMPFLAGS /openmp" -largeArrayDims svmtrain.c ../svm.cpp svm_model_matlab.c
+		mex -v CFLAGS="\$CFLAGS -std=c99" COMPFLAGS="$COMPFLAGS /openmp" -largeArrayDims svmpredict.c ../svm.cpp svm_model_matlab.c
         
         % for linux add -fopenmp and -lgomp
-        mex -v CFLAGS="\$CFLAGS -std=c99 -fopenmp"  -lgomp -largeArrayDims svmtrain.c ../svm.cpp svm_model_matlab.c
-        mex -v CFLAGS="\$CFLAGS -std=c99 -fopenmp"  -lgomp -largeArrayDims svmpredict.c ../svm.cpp svm_model_matlab.c
+        % mex -v CFLAGS="\$CFLAGS -std=c99 -fopenmp"  -lgomp -largeArrayDims svmtrain.c ../svm.cpp svm_model_matlab.c
+        % mex -v CFLAGS="\$CFLAGS -std=c99 -fopenmp"  -lgomp -largeArrayDims svmpredict.c ../svm.cpp svm_model_matlab.c
 	end
 catch
 	fprintf('If make.m failes, please check README about detailed instructions.\n');
