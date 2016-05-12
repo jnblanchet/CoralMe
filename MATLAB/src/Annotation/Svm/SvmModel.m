@@ -10,7 +10,7 @@ classdef SvmModel < handle
         end
         
         % builds a model using the specified features
-        function model = train(features, labels)
+        function model = train(this, features, labels)
             classLabels = unique(labels);
             % normalize data
             features(isnan(features)) = 0; % eliminate any possible extraction errors.
@@ -23,18 +23,19 @@ classdef SvmModel < handle
             w = getSVMssfactor(data, 2000, classLabels); % a few samples per class is quite enough for training
             data = subsampleDataStruct(data, w);
             
-            this.model.svm = trainSimpleSVM(iTrain, w, numel(classLabels));
+            model = trainSimpleSVM(data, w, numel(classLabels));
+            this.model.svm = model;
         end
         
         % tests the specified data on the model (must call train first)
-        function probabilities = test(features)
+        function probabilities = test(this, features)
             [ features, ~, ~ ] = normalize( 'minmax', features, [], this.model.normalizer);
             
             [~, ~, probEstimates] = svmpredict(zeros(size(features,1),1), features, this.model.svm, '-b 1');
             
-            removedClasses = true(models.(f{1}).SVM.nr_class,1);
-            removedClasses(models.(f{1}).SVM.Label) = false;
-            [~,reOrderIds] = sort([models.(f{1}).SVM.Label',find(removedClasses)']);
+            removedClasses = true(this.model.svm.nr_class,1);
+            removedClasses(this.model.svm.Label) = false;
+            [~,reOrderIds] = sort([this.model.svm.Label',find(removedClasses)']);
             probabilities = probEstimates(:,reOrderIds);
         end
         
