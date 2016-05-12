@@ -7,8 +7,8 @@ if nargin <= 4 || isempty(params) % set normalizing params if needed
     switch mode
         case 'minmax'
             for a = 1:size(train,2);
-                params.normalizer = max(max(train(:,a)),eps);
-                params.offset = min(train(:,a));
+                params.normalizer(1,a) = max(max(train(:,a)),eps);
+                params.offset(1,a) = min(train(:,a));
             end
         case 'musigma'
             for a = 1:size(train,2);
@@ -34,9 +34,9 @@ switch mode
         end
     case 'minmax'
         for a = 1:size(train,2);
-            train(:,a) = (train(:,a) - params.offset) ./ (params.normalizer - params.offset + eps);
+            train(:,a) = (train(:,a) - params.offset(a)) ./ (params.normalizer(a) - params.offset(a) + eps);
             if(~isempty(test))
-                test(:,a) = (test(:,a) - params.offset) ./ (params.normalizer - params.offset + eps);
+                test(:,a) = (test(:,a) - params.offset(a)) ./ (params.normalizer(a) - params.offset(a) + eps);
             end
         end
     case 'musigma'

@@ -6,7 +6,7 @@ function [optC, optG] = cwGridSearchSVM(features,labels, weights)
         weightstr = makeLibsvmWeightString( weights );
     end
     % Coarse grid optimization
-    disp(sprintf('    Coarse grid search'));
+    %disp(sprintf('    Coarse grid search'));
 
     log2C = -0:2:6;
     log2G = -8:2:0;

@@ -3,7 +3,7 @@ function [features, cache] = extractClbpWithColor(x0, x1, y0, y1, mask, image, i
 [~, ~, nChannels] = size(image);
 % Lbp Params
 samplingPoints = 8; distance = 1;
-mapping = cwClbpMapping(samplingPoints,'riu2');
+mapping = ClbpMapping(samplingPoints,'riu2');
 
 if isempty(cache) || isempty(cache.lastImage) || strcmp(cache.lastImage,imageName) ~= 1
     % grayscale image
@@ -16,7 +16,7 @@ if isempty(cache) || isempty(cache.lastImage) || strcmp(cache.lastImage,imageNam
     clbpIn = double(cache.imgG);
     %     clbpIn= (clbpIn-mean(clbpIn(:)))/std(clbpIn(:))*20+128; % image normalization, to remove global intensity
     
-    [cache.LbpMap_S,cache.LbpMap_M,cache.LbpMap_C] = cwClbp(clbpIn,distance,samplingPoints,mapping,'x');
+    [cache.LbpMap_S,cache.LbpMap_M,cache.LbpMap_C] = Clbp(clbpIn,distance,samplingPoints,mapping,'x');
     cache.LbpMap_S = imresize(cache.LbpMap_S, size(cache.imgG),'nearest');
     cache.LbpMap_M = imresize(cache.LbpMap_M, size(cache.imgG),'nearest');
     cache.LbpMap_C = imresize(cache.LbpMap_C, size(cache.imgG),'nearest');
