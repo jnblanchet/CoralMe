@@ -20,8 +20,8 @@ classdef SvmModel < handle
             data.labels = labels;
             
             % get weights
-            w = getSVMssfactor(data, 2000, classLabels); % a few samples per class is quite enough for training
-            data = subsampleDataStruct(data, w);
+            w = getSVMssfactor(data, min(2000,max(hist(labels,1:numel(classLabels)))), classLabels); % a few samples per class is quite enough for training
+%             data = subsampleDataStruct(data, w);
             
             model = trainSimpleSVM(data, w, numel(classLabels));
             this.model.svm = model;

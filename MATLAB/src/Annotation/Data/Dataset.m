@@ -2,7 +2,7 @@ classdef Dataset < handle
     %DATASET Handles features and machine learning for a set of regions.
     %   Detailed explanation goes here
     
-    properties (Access = private)
+    properties (Access = public)
         dsName % a unique string that identifies this dataset (used a file name for persistence)
         representations % a cell array of strings reprensenting extractors to instanciate
         extractors % an array containing TextureExtractor objects
@@ -34,11 +34,11 @@ classdef Dataset < handle
                 segmentationMap.fixIds(); % fix ids just in case
                 % instanciate texture feature extractors
                 this.representations = representations;
-                this.extractors = ExtractorFactory(this.representations);
+                this.extractors = extractorFactory(this.representations);
                 
                 % extract features using
                 for i=numel(this.extractors):-1:1
-                    this.featureMatrices{i} = this.extractors{i}.extractFeatures(arg1,segmentationMap);
+                    this.featureMatrices{i} = this.extractors{i}.extractFeatures(arg1, segmentationMap);
                 end
                 this.labels = zeros(size(this.featureMatrices{1},1),1);
             end
@@ -112,7 +112,7 @@ classdef Dataset < handle
             if(~this.trainingInProgress)
                 this.trainingInProgress= true;
                 validMap = (this.labels > 0); % only known labels can be used for training
-                for i=numel(this.extractors):-1:1
+                for i=numel(this.representations):-1:1
                     this.svmModels{i} = SvmModel();
                     this.svmModels{i}.train(this.featureMatrices{i}(validMap,:), this.labels(validMap));
                 end
@@ -170,12 +170,12 @@ classdef Dataset < handle
     methods (Access = private)
         % Uses the current svmScores to update undefined labels.
         function fusion(this)
-            n = numel(this.labels);
+            n = size(this.svmScores,1);
             
             for i = n:-1:1 % for each classified region
-                if(this.labels(i) == 0)
+                if(numel(this.labels) < i || this.labels(i) == 0)
                     tmp = reshape(this.svmScores(i,:,:),[],size(this.svmScores,3),1);
-                    this.scores(i,:) = prod(tmp,2);
+                    this.scores(i,:) = log(prod(tmp,2)+eps);
                     [~,this.labels(i)] = max(this.scores(i,:));
                 end
             end

@@ -23,6 +23,11 @@ function instance = coralMeFactory(context, className)
                 requiresImage(context);
                 requiresSegmentationMap(context);
                 instance = UnassignedPixelRefinement(context.getImage(),context.segMap);
+            case 'RegionInfoProvider'
+                requiresSegmentationMap(context)
+                instance = RegionInfoProvider(context.segMap);    
+            case 'AnnotationManager'
+                instance = AnnotationManager(context);
             otherwise
                 error('coralMeFactory.m does not allow this class to be created.')
         end

@@ -1,4 +1,4 @@
-classdef RegionInfoProvider
+classdef RegionInfoProvider < handle
     %REGIONINFOPROVIDER Provides display data for a segmented image.
     % Designed to provide data helpful for visualization when performing
     % annotation. It uses a segmentation map (see constructor) and provides

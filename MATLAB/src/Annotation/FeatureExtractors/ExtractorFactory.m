@@ -1,4 +1,4 @@
-function extractors = ExtractorFactory(textureRepresentations)
+function extractors = extractorFactory(textureRepresentations)
     %CORALMEFACTORY creates a cell array of concrete texture feature
     % extractor instances.
         % in:   textureRepresentations a cell array containing the names of

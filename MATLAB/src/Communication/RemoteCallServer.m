@@ -70,7 +70,7 @@ classdef RemoteCallServer < matWebSocketServer
         
         function onClose(this,message,conn)
             display(['Closing connection: ' message]);
-            this.ContextMap.remove(conn.hashCode);
+            this.ContextMap.remove(conn.hashCode); % TODO: I assume the context is garbage collected.. need to verify this.
         end
     end
     
@@ -80,7 +80,7 @@ classdef RemoteCallServer < matWebSocketServer
         function argsOut = decodeArguments(this, argsIn)
             argsOut = cell(size(argsIn));
             for i = 1:numel(argsIn)
-                if ischar(argsIn{i}) && strcmp(argsIn{i}(1:10),'data:image')
+                if ischar(argsIn{i}) && numel(argsIn{i}) >= 10 && strcmp(argsIn{i}(1:10),'data:image')
                     split = strsplit(argsIn{i},',');
                     header = upper(split{1});
                     image = split{2};
@@ -110,6 +110,8 @@ classdef RemoteCallServer < matWebSocketServer
                 elseif  d == 4 % png is needed for transparency
                     body64 = base64encode(imencode( argIn, 'PNG'));
                     argOut = strcat('data:image/png;base64,', body64);
+                else
+                    argOut = argIn;
                 end
             else
                 argOut = argIn;
