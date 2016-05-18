@@ -31,7 +31,11 @@ function [features, cache] = extractTexton(x0,x1,y0,y1, mask, image, imageName, 
     % cache map
     if isempty(cache) || isempty(cache.lastImage) || strcmp(cache.lastImage,imageName) ~= 1
         s = min(2E6 / (size(image,1) * size(image,2)),1);
-        cache.textonMap = imresize(extractTextonMap(dict.featparam, dict.featprep, imresize(image,s)),[size(image,1),size(image,2)],'nearest');
+        im_ = imresize(image,s);
+        im__ = imPad( im_, 50, 'symmetric');
+        textons = extractTextonMap(dict.featparam, dict.featprep, im__);
+        textons_ = imPad( textons, -50, 'replicate');
+        cache.textonMap = imresize(textons_,[size(image,1),size(image,2)],'nearest');
     end
 
 
