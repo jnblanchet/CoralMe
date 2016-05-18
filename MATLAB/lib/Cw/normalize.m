@@ -2,7 +2,7 @@ function [ train, test, params ] = normalize( mode, train, test, params)
 %NORMALIZE normalize the data train and test according to mode.
 %supported modes: musigmat (mu = 0, sigma = 1), minmax: min=0 max=1
 
-if nargin <= 4 || isempty(params) % set normalizing params if needed
+if nargin < 4 || isempty(params) % set normalizing params if needed
     params = [];
     switch mode
         case 'minmax'
