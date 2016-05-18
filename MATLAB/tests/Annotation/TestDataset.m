@@ -8,11 +8,11 @@ representations = {'TextonExtractor','ClbpExtractor','CnnActivationExtractor'};
 %% CONSTRUCTOR
 fprintf('Creating Dataset from an image... ');
 error = false;
-% try
+try
     a = Dataset(f,segMap,representations);
-% catch
-%     error = true;
-% end
+catch
+    error = true;
+end
 
 if(numel(a.labels) ~= 2)
     error = true;
@@ -151,13 +151,14 @@ end
 % 
 fprintf('Merging two datasets... ');
 error = false;
+expectedtotal = numel(a.labels) + numel(b.labels);
 try
     a.appendData(b);
 catch
     error = true;
 end
 
-if(sum(b.labels == 0) > 0) % make sure all labels were assigned
+if(numel(a.labels) ~= expectedtotal)
     error = true;
 end
 
