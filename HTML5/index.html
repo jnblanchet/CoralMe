@@ -10,9 +10,11 @@
 		<!-- Bootstrap -->
 		<link href="css/bootstrap.min.css" rel="stylesheet">
 		<link href="css/index.css" rel="stylesheet">
+		<!-- Ignite css (for radial menu) -->
+		<link href="css/infragistics.theme.css" rel="stylesheet"></link>
+		<link href="css/infragistics.css" rel="stylesheet"></link>
 	</head>
 	<body>
-	
 		<div class="container">
 			<h1>CoralMe integration demo</h1>
 			<div class="container" id="divStep1">
@@ -42,16 +44,16 @@
 					</li>
 				</ol>
 			</div>
-			<div class="container" id="divStep2">
-			<h2>1 - Segmentation</h2>
-			<div class="row">
-				Select a mode:
-				<select id="selectSegmentationMode">
-					<option value="" selected="selected"></option>
-					<option value="SmartRegionSelector">Smart Region Selector</option>
-					<option value="SuperPixelExtractor">Superpixel Extractor</option>
-				</select>
-			</div>
+			<div class="container" id="divStep2" hidden>
+				<h2>1 - Segmentation</h2>
+				<div class="row">
+					Select a mode:
+					<select id="selectSegmentationMode">
+						<option value="" selected="selected"></option>
+						<option value="SmartRegionSelector">Smart Region Selector</option>
+						<option value="SuperPixelExtractor">Superpixel Extractor</option>
+					</select>
+				</div>
 				<div id='SmartRegionSelectorProperties' class="options" hidden>
 					<div class="row">
 						<div class="col-md-3">Image resize factor (%):</div>
@@ -102,46 +104,69 @@
 				</div>
 				<div class="row">
 					<br />
-					<input type="button" id="doneSegmentationButton" value="Onto step 2!" />
+					<input type="button" id="doneSegmentationButton" value="Let's refine this a bit!" />
 				</div>
 			</div>
-			<div class="container" id="divStep3">
-			<h2>2 - Region refinement</h2>
-			<ol>
-				<li>
-					Use drag clicks to refine the image below (left = merge, right = split).
-				</li>
-				<li>
-					OR, You can also use the unassigned pixel segmentation refinement tool below:
-				</li>
-			</ol>
-			<div class="row">
-				<div class="col-md-3">Regularization term (distance weight):</div>
-				<div class="col-md-1"><p id="regularizerUnassignedDisplay"> - </p></div>
-				<div class="col-md-8"><input type="range" id="regularizerUnassignedRange"  min="-50" max="50" value="10" /></div>
+			<div class="container" id="divStep3" hidden>
+				<h2>2 - Region refinement</h2>
+				<ol>
+					<li>
+						Use drag clicks to refine the image below (left = merge, right = split).
+					</li>
+					<li>
+						OR, You can also use the unassigned pixel segmentation refinement tool below:
+					</li>
+				</ol>
+				<div class="row">
+					<div class="col-md-3">Regularization term (distance weight):</div>
+					<div class="col-md-1"><p id="regularizerUnassignedDisplay"> - </p></div>
+					<div class="col-md-8"><input type="range" id="regularizerUnassignedRange"  min="-50" max="50" value="10" /></div>
+				</div>
+				<div class="row">
+					<div class="col-md-3"><input type="button" id="UnassignedPixelsButton" value="I'm feeling lucky!" /></div>
+					<div class="col-md-9"></p></div>
+				</div>
+				<div class="row">
+				
+				</div>
+				<div class="row">
+					<div class="col-md-6"></div>
+					<div class="col-md-3">Server working: <img id="loader" src="img/loader.gif" hidden /></div>
+				</div>
+				<div class="row" id="divWorkingArea2"></div>
+				<div class="row">
+					<br />
+					<input type="button" id="doneRefinementButton" value="Okay, I'm ready for annotation now!" />
+				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-3"><input type="button" id="UnassignedPixelsButton" value="I'm feeling lucky!" /></div>
-				<div class="col-md-9"></p></div>
-			</div>
-			<div class="row">
-			
-			</div>
-			<div class="row">
-				<div class="col-md-6"></div>
-				<div class="col-md-3">Server working: <img id="loader" src="img/loader.gif" hidden /></div>
-			</div>
-			<div class="row" id="divWorkingArea2"></div>
-			<div class="container" id="divStep4">
-			<h2>3 - Annotation</h2>
+			<div class="container" id="divStep4" hidden>
+				<h2>3 - Annotation</h2>
+				<p>
+					Click on the markers bellow to label the regions.
+				</p>
+				<p id="supportedLabels">
+					The default annotation model (used in this demo) supports the following labels:&nbsp;
+				</p>
+				
+				<div class="row" id="divWorkingArea3">			
+				</div>
 			</div>
 		</div>
+		<div style="width:100%;text-align:center;padding-top:2em;">
+		<h6> (c) J-N Blanchet 2016 </h6>
+		</div>
+		<script src="js/modernizr.min.js"></script>
 		<script src="js/jquery-2.2.3.min.js"></script>
 		<script src="js/bootstrap.min.js"></script>
 		<script src="js/jquery.jsonrpcclient.js"></script>
 		<script src="js/ocanvas-2.8.3.min.js"></script>
+		<script src="js/jquery-ui.min.js"></script>
+		<script src="js/infragistics.core.js"></script>
+		<script src="js/infragistics.lob.js"></script>
+		<script src="js/infragistics.dv.js"></script>
 		<script src="js/SmartRegionSelectorGUI.js"></script>
 		<script src="js/GraphCutMergeToolGUI.js"></script>
+		<script src="js/AnnotationToolGUI.js"></script>
 		<script src="js/index.js"></script>
 
 	</body>

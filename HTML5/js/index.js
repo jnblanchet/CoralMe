@@ -95,7 +95,7 @@ $(document).ready(function() {
 	});
 	
 	/*
-	 * Segmentation refinement(step 2)
+	 * Segmentation refinement (step 2)
 	 */
 	$('#regularizerUnassignedRange').on("change mousemove", function() {
 		$('#regularizerUnassignedDisplay').html('10^' + $(this).val() / 10);
@@ -106,6 +106,12 @@ $(document).ready(function() {
 		socket.call('UnassignedPixelRefinement.assignFreePixels', [Math.pow(10,parseInt($('#regularizerUnassignedRange').val()) / 10)],
 			function(result) { done(); $('#imgWorkingAreaOverlay').attr("src", result); }
 		);
+	});
+	$('#doneRefinementButton').click(function() {
+		updateStep(4);
+		jQuery("#divWorkingArea").detach().appendTo('#divWorkingArea3'); // keep background image
+		$('#canvasWorkingArea').remove(); // remove any existing canvas
+		loadAnnotation();
 	});
 	
 	
@@ -175,9 +181,6 @@ function renderCanvas(stepId) {
 	}
 	else if(stepId == 2){
 		GraphCutMergeToolGUI.init(canvas, H, W, socket, 'imgWorkingAreaOverlay');
-		
-		// also setup unassigned pixel refinement tool!
-		
 	}
 }
 
@@ -255,6 +258,46 @@ function initSuperPixelExtractor() {
 	// show and init properties
 	$('.options').hide();
 	$('#SuperPixelExtractorProperties').show();
+}
+
+var modelName = 'mlc2008_200PerClass'; //mlc2008_200PerClass_fusion2 | this could be user-selected by calling AnnotationManager.listDatasets 
+function loadAnnotation() {
+	//supportedLabels
+	loading();
+	// load dataset and display classes
+	socket.call('AnnotationManager.loadDataset', [modelName], // this loads the previously trained model (only need to call once per session)
+		function() {
+			socket.call('AnnotationManager.getLabelDescriptions', [modelName], // this returns the labels (e.g. SAND) supported by our model
+				function(result) {
+					var labels = result;
+					$('#supportedLabels').append(labels.join());
+					socket.call('AnnotationManager.buildTmpDataset', [], function() { // extracts features from the current working image (into a tmp dataset referenecd with no name '')
+						socket.call('AnnotationManager.predictClasses', [modelName,''], // predict the classes using our previously trained model.
+							function(scores) {
+								AnnotationToolGUI.addRadialMenus(labels, scores);
+								done();
+							}
+						);
+					});
+				}
+			);
+		}
+	);
+	
+	// get region centers
+	/**/
+	
+		// load dataset and display classes
+	/*socket.call('AnnotationManager.buildTmpDataset', [], function() {
+		//scores = predictClasses(this,trainDsName, testDsName)
+		//get predictions when ready
+		socket.call('AnnotationManager.predictClasses', [modelName,''],
+				function(scores) {
+					alert(scores);
+					done(); // this is by far the slowest call, it will finish last
+				}
+			);
+	});*/
 }
 
 
