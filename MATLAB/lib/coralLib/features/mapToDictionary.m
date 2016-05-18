@@ -10,7 +10,16 @@ function map = mapToDictionary(I, dictionary)
 %  Copyright notice: license.txt
 %  Changelog: changelog.txt
 
-global GlobalUseGpuFlag;
+persistent useGpuFlag;
+
+if(isempty(useGpuFlag))
+    try
+        gpuDevice;
+        useGpuFlag = true;
+    catch
+        useGpuFlag = false;
+    end
+end
     
 map = zeros(size(I, 1), 1);
 % divide in 100 parts
@@ -18,13 +27,13 @@ P = round(linspace(0, size(I,1), 100));
 
 for i = 2 : length(P)
     thisChunk = I(P(i-1) + 1 : P(i), :);
-    if GlobalUseGpuFlag == 1
+    if useGpuFlag == 1
         dist = pdist2(gpuArray(thisChunk), gpuArray(dictionary), 'sqeuclidean' );
     else
         dist = pdist2(thisChunk, dictionary, 'sqeuclidean' );
     end
     [~,pos] = min(dist, [], 2);
-    if GlobalUseGpuFlag == 1
+    if useGpuFlag == 1
         res = gather(pos);
     else
         res = pos;
