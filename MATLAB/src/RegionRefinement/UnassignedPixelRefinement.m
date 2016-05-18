@@ -86,7 +86,7 @@ classdef UnassignedPixelRefinement < AbstractSegmentationTool
             end
             
             % model each regions (position, and texture)
-            samplesPerClass = 100; % for efficiency, the number of pixels per class considered for modeling
+            samplesPerClass = 200; % for efficiency, the number of pixels per class considered for modeling
             this.classes = unique(segMap(:));
             this.classes = this.classes(this.classes > 0); % negative or zero means unassigned.
             numclasses = numel(this.classes);
@@ -108,7 +108,7 @@ classdef UnassignedPixelRefinement < AbstractSegmentationTool
                     texturePoints(c,:) = m(this.unlabeledPoints);
                 end
                 gmm = struct();
-                [gmm.mu, gmm.sigma, gmm.p] = vl_gmm(texturePoints,5);                
+                [gmm.mu, gmm.sigma, gmm.p] = vl_gmm(texturePoints,2);                
                 this.textureModels{x} = gmm;
             end
         end
