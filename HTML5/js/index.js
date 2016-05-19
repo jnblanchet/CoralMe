@@ -260,7 +260,7 @@ function initSuperPixelExtractor() {
 	$('#SuperPixelExtractorProperties').show();
 }
 
-var modelName = 'mlc2008_200PerClass'; //mlc2008_200PerClass_fusion2 | this could be user-selected by calling AnnotationManager.listDatasets 
+var modelName = 'mlc2008_200PerClass_fusion2'; //mlc2008_200PerClass_fusion2 | this could be user-selected by calling AnnotationManager.listDatasets 
 function loadAnnotation() {
 	//supportedLabels
 	loading();
