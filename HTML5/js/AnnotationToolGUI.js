@@ -16,20 +16,20 @@ var AnnotationToolGUI = {
 				for (var i=0;i<centers.length;i++) {
 					var scoresForThisRegion = (Array.isArray(scores[i]) ? scores[i]: scores);
 					var center = (Array.isArray(centers[i]) ? centers[i]: centers);
-					var h = Math.round(maxH * center[1])-160;
-					var w = Math.round(maxW * center[0])-160;
+					var h = Math.round(maxH * center[1]);
+					var w = Math.round(maxW * center[0]);
 					
 					var id = 'radialMenu'+i;
 					$('#divWorkingArea').append(
-						'<div id="parent'+id+'" style="position:absolute; left:'+w+'px; top:'+h+'px; z-index:99;" class="radialmenuclass">' + 
+						'<div id="parent'+id+'" style="position:absolute; left:'+(w - 180)+'px; top:'+(h - 180)+'px; z-index:100;">' + 
 							'<div id="'+id+'"></div>' + 
 						'</div>'
 					);
 					var c = (Array.isArray(colors[i]) ? rgbToHex(colors[i]): rgbToHex(colors));
 					var arr = this.fillRadialMenus(labels, i, scoresForThisRegion);
 					$('#' + id).igRadialMenu({
-						width: '320px',
-						height: '320px',
+						width: '360px',
+						height: '360px',
 						centerButtonContentHeight: 15,
 						centerButtonContentWidth: 15,
 						centerButtonClosedStroke: c,
@@ -38,19 +38,18 @@ var AnnotationToolGUI = {
 						outerRingFill : c,
 						outerRingThickness: 10,
 						menuOpenCloseAnimationDuration : 100,
-						items: arr,
-						opened: function (evt) {
-							$(this).find('canvas').eq(0).igPopover('hide');
-						},
-						closed: function (evt) {
-							var tt = $(this).find('canvas').eq(0);
-							tt.igPopover('show');
-							tt.trigger('click');
-						}
+						items: arr
 					});
 					var lblId = scoresForThisRegion.indexOf(Math.max(...scoresForThisRegion));
 					
 					// add tooltip
+					$('#divWorkingArea').append(
+						'<div id="toolTip'+id+'" style="position:absolute; left:'+(w + 20)+'px; top:'+h+'px; z-index:99; padding:0.5em; border:1px solid ' + c + '" ' +
+						'class="ui-widget-content ui-corner-all">' + 
+							labels[lblId] + ' (' + scoresForThisRegion[lblId] + '%)' +
+						'</div>'
+					);
+					/*
 					$('#' + id + ' canvas:first-child').igPopover( {
 						direction: 'right',
 						position: 'start',
@@ -64,7 +63,7 @@ var AnnotationToolGUI = {
 						},
 						showOn: 'click'
 					});
-					$('#' + id + ' canvas:first-child').trigger('click');
+					$('#' + id + ' canvas:first-child').trigger('click');*/
 				}
 	
 				/*for (var i=0;i<centers.length;i++) {
@@ -91,18 +90,22 @@ var AnnotationToolGUI = {
 
 function fillRadialMenus(labels, regionId, scores) {
 	return jQuery.map( labels, function( n, i ) {
+		var sliceBrightness = Math.min(255,Math.round(scores[i] * 255 / 80));
 		return {
 			name: 'button' + i,
 			header: n + ' (' + scores[i] + '%)',
 			iconUri: 'img/' + n + '.jpg',
-			color: '#99FF33',
+			innerAreaFill: rgbToHex([sliceBrightness,sliceBrightness,sliceBrightness]),
 			checkedHighlightBrush : "#FF0000",
 			checkBehavior: 'radioButton',
+			value: false,
 			click: function (evt) {
 				evt.item.isChecked = true;
 				$('#radialMenu' + regionId).igRadialMenu("option", "isOpen", false);
-				// Get reference to the menu item object: evt.item;
 			},
+			checked: function (evt) {
+				$('#' + 'toolTipradialMenu' + regionId).html(labels[i]);
+            }
 		}
 	});
 }
