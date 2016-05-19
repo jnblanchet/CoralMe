@@ -9,7 +9,7 @@ function model = trainSimpleSVM(trainData, trainingWeights, nClasses, optC, optG
 %   * model: the model.
 
 
-    valTrW = getSVMssfactor(trainData, 100, 1:nClasses);
+    valTrW = getSVMssfactor(trainData, 200, 1:nClasses);
     valData = subsampleDataStruct(trainData, valTrW);
     if(nargin <= 4)
         % optimise hyperparameters
