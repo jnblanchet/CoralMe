@@ -31,9 +31,6 @@ classdef UnassignedPixelRefinement < AbstractSegmentationTool
         function contourImage = assignFreePixels(this,regularizationWeight)
             newMap = this.segMap.getMap();
              
-%             classes
-%             unlabeledPoints
-             
             textureDistance = zeros(numel(this.unlabeledPoints),numel(this.classes));
             positionDistance = textureDistance;
             
