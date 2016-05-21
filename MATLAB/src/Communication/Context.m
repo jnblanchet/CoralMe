@@ -94,6 +94,9 @@ classdef Context < handle
         function image = getImage(this)
             image = this.image;
         end
+        function contourImage = getMap(this)
+            contourImage = this.segMap.getContourImage();
+        end
         % setters
         function setImage(this, image)
             flushAllObjects(this);
