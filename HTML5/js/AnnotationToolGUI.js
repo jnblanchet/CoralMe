@@ -1,7 +1,7 @@
 var AnnotationToolGUI = {	
 	addRadialMenus: function(labels, scores) {		
 		//update background map
-		socket.call('SmartRegionSelector.getMap', [],
+		socket.call('Context.getMap', [],
 			function(result) {
 				$('#imgWorkingAreaOverlay').attr('src', result);
 			}
