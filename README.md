@@ -55,8 +55,18 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 
 ## Communication
 **Communication.Context**
-	
+**isReady()**: Forces initilization of the session and its context.
+	returns: True when the server is ready.
 
+**getImage()**: Used to obtain the image that is actively being processed in the current session.
+	returns: the current image in base64 JPEG encoding.
+
+**getMap()**: Used to obtain a transparent overlay of the region contours for the current segmentation.
+	returns: a base64 PNG image with transparency showing the region contours with unique colors.
+
+**setImage(image)**: This is one of the first few methods that should always be called. It sets the working image.
+	image: a base64 encoded JPEG image.
+	
 ## Segmentation
 **Segmentation.SmartRegionSelector**
 	
@@ -77,4 +87,19 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 
 # Acknowledgement
 
+[Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) and its [MATLAB wrapper](https://github.com/jebej/MatlabWebSocket)
+[JSONLab](https://github.com/fangq/jsonlab)
+[MatConvNet](http://www.vlfeat.org/matconvnet/) (for convolutionnal neural nets).
+[Texton code, and dictionary](http://vision.ucsd.edu/content/moorea-labeled-corals), by Beijbom et.al. in CVPR 2012, "Automated Annotation of Coral Reef Survey Images"
+[Local Binary Patterns](http://www.cse.oulu.fi/CMV/Downloads/LBPMatlab) by Marko Heikkilä and Timo Ahonen
+Completed Local Binary Patterns by Zhenhua Guo, Lei Zhang, and David Zhang
+[Color Descritors] (http://lear.inrialpes.fr/people/vandeweijer/color_descriptors.html) by Joost van de Weijer
+Smart Segmentation Tool by JN. Blanchet
+(Multi-classifier Fusion) [https://peerj.com/preprints/2026/] by JN. Blanchet, S.Déry, JA. Landry
+[VLFeat](http://www.vlfeat.org/)
+[LIBSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvm/)
+[JavaScript JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc)
 
+
+# License
+The CoralMe source code (src dir) is licensed under the MIT license. Each library (lib dir) have their own license.
