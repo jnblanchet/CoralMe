@@ -55,17 +55,18 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 
 ## Communication
 **Communication.Context**
-**isReady()**: Forces initilization of the session and its context.
-	returns: True when the server is ready.
 
-**getImage()**: Used to obtain the image that is actively being processed in the current session.
-	returns: the current image in base64 JPEG encoding.
+- **isReady()**: Forces initilization of the session and its context.
+	- returns: True when the server is ready.
 
-**getMap()**: Used to obtain a transparent overlay of the region contours for the current segmentation.
-	returns: a base64 PNG image with transparency showing the region contours with unique colors.
+- **getImage()**: Used to obtain the image that is actively being processed in the current session.
+	- returns: the current image in base64 JPEG encoding.
 
-**setImage(image)**: This is one of the first few methods that should always be called. It sets the working image.
-	image: a base64 encoded JPEG image.
+- **getMap()**: Used to obtain a transparent overlay of the region contours for the current segmentation.
+	- returns: a base64 PNG image with transparency showing the region contours with unique colors.
+
+- **setImage(image)**: This is one of the first few methods that should always be called. It sets the working image.
+	- image: a base64 encoded JPEG image.
 	
 ## Segmentation
 **Segmentation.SmartRegionSelector**
@@ -87,6 +88,7 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 
 # Acknowledgement
 
+CoralMe was made possible by the Open-source community:
 - [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) and its [MATLAB wrapper](https://github.com/jebej/MatlabWebSocket)
 - [JSONLab](https://github.com/fangq/jsonlab)
 - [MatConvNet](http://www.vlfeat.org/matconvnet/) (for convolutionnal neural nets).
@@ -95,7 +97,7 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 - Completed Local Binary Patterns by Zhenhua Guo, Lei Zhang, and David Zhang
 - [Color Descritors] (http://lear.inrialpes.fr/people/vandeweijer/color_descriptors.html) by Joost van de Weijer
 - Smart Segmentation Tool by JN. Blanchet
-- [Multi-classifier Fusion](https://peerj.com/preprints/2026/) by JN. Blanchet, S.Déry, JA. Landry
+- [Multi-classifier Fusion](https://peerj.com/preprints/2026/) by JN. Blanchet, S. Déry, JA. Landry
 - [VLFeat](http://www.vlfeat.org/)
 - [LIBSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvm/)
 - [JavaScript JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc)
