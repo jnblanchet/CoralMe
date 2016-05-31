@@ -57,7 +57,7 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 **Communication.Context**
 
 - **isReady()**: Forces initilization of the session and its context.
-	- returns: True when the server is ready.
+	- returns: True (once the server is ready).
 
 - **getImage()**: Used to obtain the image that is actively being processed in the current session.
 	- returns: the current image in base64 JPEG encoding.
@@ -70,9 +70,65 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 	
 ## Segmentation
 **Segmentation.SmartRegionSelector**
+- **isReady()**: Forces initilization (instanciation, image resize, texture caching, etc).
+	- returns: true
+- **setResizeFactor(resizeFactor)**: Changes the size of the image. This is a trade off between computation speed and texture details.
+	- resizeFactor: a factor between 0 and 1 (double or float). The class will estimate its own resize factor if this method is not used.
+- **getResizeFactor()**: see setResizeFactor.
+	- returns: the image resize factor.
+- **getLabelMap()**: used to acces the current segmentation map, which is a map of integer index showing the different regions.
+	- returns: a 2d segmentation map (integer index array).
+- **createBlob(x,y,r)**: Creates a new blob part of a new group.
+	- x: the relative [0.0-1.0] or absolute (in px) x position (row id).
+	- y: same as x, but for y (col id).
+	- r: the radius to consider when creating the blob. if relative (between 0 and 1) it is a ratio of the image width. Otherwise it's a pixel mesurement.
+	- returns: the id of the new blob.
+- **copyBlobToLocation(blobId, x, y, r)**: Creates a new blob, part of the same group as blobId. The union of the two blobs will define the resulting region.
+	- x: the relative [0.0-1.0] or absolute (in px) x position (row id).
+	- y: same as x, but for y (col id).
+	- r: the radius to consider when creating the blob. if relative (between 0 and 1) it is a ratio of the image width. Otherwise it's a pixel mesurement.
+	- returns: the id of the new blob.
+- **moveBlob(blobId, x, y)**: Change the position of an existing blob.
+	- blobId: the id of the blob to move.
+	- x: the new x (row) position (relative or absolute)
+	- y: the new y (col) position (relative or absolute)
+- **deleteBlob(blobId)**: removes an existing blob.
+	- blobId: the Id of the blob to delete.
+- **resizeBlobRegion(blobId, newSize)**: change the radius to consider around a blob.
+	- blobId: the id of the target blob.
+	- newSize: the new raidus relative (0 to 1, as a ratio of the image width), or absolute (in px).
+- **isValidBlobId(this, blobId)**: useful to check if an id exists.
+	- returns: true if the blob id exists, false otherwise.
+- **getKernelSize(this)**: gets the size (in pixels) of the kernel for the texture kernel density estimation.
+	- returns: the kernel size.
+- **setKernelSize(newSize)**: sets the kernel size. the kernel size should be roughly the same size as the texel of interest.
+	- newSize: the new kernel size in pixel.
+
 	
 **Segmentation.SuperPixelExtractor**
-
+- **isReady()**: Forces initilization (instanciation, image resize, texture caching, etc).
+	- returns: true
+- **setResizeFactor(resizeFactor)**: Changes the size of the image. This is a trade off between computation speed and texture details.
+	- resizeFactor: a factor between 0 and 1 (double or float). The class will estimate its own resize factor if this method is not used.
+- **getResizeFactor()**: see setResizeFactor.
+	- returns: the image resize factor.
+- **getLabelMap()**: used to acces the current segmentation map, which is a map of integer index showing the different regions.
+	- returns: a 2d segmentation map (integer index array).
+- **setRegionSize(newRegionSize)**: sets the region size parameter for superpixel extraction (in pixels).
+	- newRegionSize: the new size in pixel.
+- **getRegionSize()**: gets the region size.
+	- returns: the region size in pixel.
+- **setRegularizer(newRegularizer)**: sets the weight assigned to spatial distance between pixels above similarity.
+	- newRegularizer: the new regularizer factor (positive integer).
+- **getRegularizer()**: gets the current regularization factor.
+	- returns: the regularization factor.
+- **setGraphCutRatio(newGraphCutRatio)**: the percentage of superpixels that will be merged together using iterative cuts based on texture similarity.
+	- newGraphCutRatio: the new graphcut cut ratio value.
+- **getGraphCutRatio()**: gets the current value of the auto graph cut parameter.
+	- returns:  the auto graph cut parameter.
+- **getMap()**: lauch the super pixel extraction.
+	- returns: a base64 PNG image with transparency showing the region contours with unique colors.
+	
 ## RegionRefinement
 **Segmentation.GraphCutMergeTool**
 	
