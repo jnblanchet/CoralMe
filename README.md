@@ -15,14 +15,14 @@ The MATLAB library consists of 4 packages:
 - **Segmentation**: tools for region extraction.
 - **Region refinement**: tools that improve an existing rough or incomplete segmentation.
 - **Annotation**: machine learning tools that extract features, and predict classes.
-- **Communication**: Unrelated to coral annotation. It contains everything related to the CoralMe server, RPC protocol, and JSON encoding.
+- **Communication**: unrelated to coral annotation. It contains everything related to the CoralMe server, RPC protocol, and JSON encoding.
 
 
 Some important classes and scripts for developers:
 - **startServer.m**: script that launches the CoralMe RPC server.
-- Communication.**RemoteCallServer** is the server class. It handles data encoding. It returns basic types (double, int) as well as images in the form base64 jpeg (for MxNx3 matrices) or png (if a 4th transparency channel exists). The class may require improvements in the future to support new data types.
+- Communication.**RemoteCallServer** is the server class. It handles data encoding. It handles basic types (double, int, string) as well as images in the form base64 JPEG (for MxNx3 matrices) or PNG (if a 4th transparency channel exists). The class may require improvements in the future to support new data types.
 
-- Communication.**Context** is the session context. The context includes the image that is currently being processed and its segmentation. It also routes external calls to the proper class using the with the context parameter. See the **coralMeFactory.m** script to see which classes are supported, and how instantiation is performed.
+- Communication.**Context** is the session context. The context includes the image that is currently being processed and its segmentation. It also routes external calls to the proper class using the context parameters. See the **coralMeFactory.m** script for a list of the supported classes (that can be queried remotely), and how instantiation is performed.
 - **coralMeFactory.m** creates session-specific objects. For simplicity and security, only object listed in the factory can be remotely queried. From the outside, classes are seen as static (e.g. a call to any session-instance would be "ClassName.method(args)"), but within MATLAB, there is 1 instance per class per session. Only a class’ public methods can be called.
 
 # Quickstart (running the Web demo)
@@ -32,15 +32,15 @@ Some important classes and scripts for developers:
 # Setup the CoralMe MATLAB server
 1. Open MATLAB
 2. Navigate to the CoralMe/MATLAB directory.
-3. If you’re not using 64-bits Windows or Linux, the LIBSVM compiled files (mex) are not included. Move to /lib/libSvm/matlab and run make.m. refer to the [MATLAB interface repository]( https://github.com/cjlin1/libsvm/tree/master/matlab) for more info.
-4. If you’d like to use convolutional neural networks (not necessary for the demo) compile the matconvnet library by running /lib/matconvnet/ vl_compilenn.m. Refer to the [official website]( http://www.vlfeat.org/matconvnet/install/#compiling) for more info on compiling. You’ll also need to download one of the pretrained networks (transfer learning is currently the only supported CNN feature).
-5. Make sure you have an up to date (Java Runtime Environment)[ http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html] installed.
+3. If you’re not using 64-bits Windows or Linux, the LIBSVM compiled files (mex) are not included. Move to /lib/libSvm/matlab and run make.m. Refer to the [LIBSVM MATLAB interface repository]( https://github.com/cjlin1/libsvm/tree/master/matlab) for more info.
+4. If you’d like to use convolutional neural networks (not required for the demo) compile the matconvnet library by running /lib/matconvnet/ vl_compilenn.m. Refer to the [official website]( http://www.vlfeat.org/matconvnet/install/#compiling) for more info on compiling. You’ll also need to download one of the pretrained networks (transfer learning is currently the only supported CNN feature).
+5. Make sure you have an up to date [Java Runtime Environment]( http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) installed.
 6. run **startServer.m**
 
 # Remote procedure call
-Once the CoralMe MATLAB server is running, it can be queried remotely using the JSON-RPC2 protocol, and following syntax: "**ClassName.method(arg1, arg2, ...)**". Only public methods of the classes listed in **coralMeFactory.m** can be query. See the API section for a full list of the supported calls.
+Once the CoralMe MATLAB server is running, it can be queried remotely using the JSON-RPC2 protocol, with the format for the method "**ClassName.method**, and the argments in an array  **[arg1, arg2, ...]** as required by the MATLAB class signature. Only public methods of the classes listed in **coralMeFactory.m** can be query. See the API section for a full list of the supported calls.
 
-Here’s an example of a call from a JavaScript application using the [JSON RPC 2.0 jQuertPlugin](https://github.com/datagraph/jquery-jsonrpc)
+Here’s an example of a call from a JavaScript application using the [JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc). Note that the socket should remain open until the client application closes, because the context is erased when the session ends.
 ```
 var socket = new $.JsonRpcClient({ socketUrl: 'ws://localhost:8888' });
 socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in MATLAB:
@@ -50,27 +50,25 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 			}
 		);
 ```
-the same method called a java applications using [JSON-RPC 2.0 Base](http://software.dzhuvinov.com/json-rpc-2.0-base.html):
-
 
 # Application programming interfaces (API)
 
 ## Communication
-	### Communication.Context
+**Communication.Context**
 	
 
 ## Segmentation
-	### Segmentation.SmartRegionSelector
+**Segmentation.SmartRegionSelector**
 	
-	### Segmentation.SuperPixelExtractor
+**Segmentation.SuperPixelExtractor**
 
 ## RegionRefinement
-	### Segmentation.GraphCutMergeTool
+**Segmentation.GraphCutMergeTool**
 	
-	### Segmentation.UnassignedPixelRefinement
+**Segmentation.UnassignedPixelRefinement**
 	
 ## Annotation
-	### Annotation.AnnotationManager
+**Annotation.AnnotationManager**
 
 
 # Known limitations
@@ -79,16 +77,4 @@ the same method called a java applications using [JSON-RPC 2.0 Base](http://soft
 
 # Acknowledgement
 
-JAva server
-matlab json converter
-matconvnet (CNN)
-beijbom dict + texton
-LBP
-CLBP
-hue hist opponent angle
-smart seg tool
-VLFeat
-LIBSVM
-fusion (cite us)
-javacript JSONRPC library
 
