@@ -14,31 +14,31 @@ CoralMe provides functionalities that enhance your home-made or Open-source anno
 The MATLAB library consists of 4 packages:
 - **Segmentation**: tools for region extraction.
 - **Region refinement**: tools that improve an existing rough or incomplete segmentation.
-- **Annotation**: machine learning tools that extract features, and predict classes.
+- **Annotation**: machine learning tools that extract features and predict classes.
 - **Communication**: unrelated to coral annotation. It contains everything related to the CoralMe server, RPC protocol, and JSON encoding.
 
 
 Some important classes and scripts for developers:
 - **startServer.m**: script that launches the CoralMe RPC server.
 - Communication.**RemoteCallServer** is the server class. It handles data encoding. It handles basic types (double, int, string) as well as images in the form base64 JPEG (for MxNx3 matrices) or PNG (if a 4th transparency channel exists). The class may require improvements in the future to support new data types.
-
 - Communication.**Context** is the session context. The context includes the image that is currently being processed and its segmentation. It also routes external calls to the proper class using the context parameters. See the **coralMeFactory.m** script for a list of the supported classes (that can be queried remotely), and how instantiation is performed.
-- **coralMeFactory.m** creates session-specific objects. For simplicity and security, only object listed in the factory can be remotely queried. From the outside, classes are seen as static (e.g. a call to any session-instance would be "ClassName.method(args)"), but within MATLAB, there is 1 instance per class per session. Only a class’ public methods can be called.
+- **coralMeFactory.m** creates session-specific objects. For simplicity and security, only object listed in the factory can be remotely queried. From the outside, classes are seen as static (e.g. a call to any session-instance would be "ClassName.method(args)"), but within MATLAB, there is 1 instance per class per session. Only public methods can be called.
 
 # Quick start (running the Web demo)
 1. Follow the instructions below to launch the CoralMe MATLAB server.
-2. Open **index.html** using Firefox or edge. (Note: Chrome will not work for medium-sized images. There is a problem with the json-rpc java library we use. This will be fixed soon.)
+2. Open **index.html** using Firefox or edge. (Note: Chrome will not work for medium to large sized images. There is a problem with the json-rpc java library we use. This will be fixed soon.)
 
 # Setup the CoralMe MATLAB server
 1. Open MATLAB
 2. Navigate to the CoralMe/MATLAB directory.
-3. If you’re not using 64-bits Windows or Linux, the LIBSVM compiled files (mex) are not included. Move to /lib/libSvm/matlab and run make.m. Refer to the [LIBSVM MATLAB interface repository]( https://github.com/cjlin1/libsvm/tree/master/matlab) for more info.
-4. If you’d like to use convolutional neural networks (not required for the demo) compile the matconvnet library by running /lib/matconvnet/ vl_compilenn.m. Refer to the [official website]( http://www.vlfeat.org/matconvnet/install/#compiling) for more info on compiling. You’ll also need to download one of the pretrained networks (transfer learning is currently the only supported CNN feature).
+3. Add the TCP WebSocket lib jar to the static java path. "javaaddpath" [may not work](http://www.mathworks.com/help/matlab/matlab_external/bringing-java-classes-and-methods-into-matlab-workspace.html). Type **edit('classpath.txt')** in the MATLAB console. Add as a first line the path to "matlabwebsocket.jar". Type "**[pwd filesep 'lib' filesep 'TCP' filesep 'matlabwebsocket.jar']**" in the console to obtain the correct path.
+4. If you’re not using 64-bits Windows or Linux, the LIBSVM compiled files (mex) are not included. Move to /lib/libSvm/matlab and run make.m. Refer to the [LIBSVM MATLAB interface repository]( https://github.com/cjlin1/libsvm/tree/master/matlab) for more info.
+5. If you’d like to use convolutional neural networks (not required for the demo) compile the matconvnet library by running /lib/matconvnet/ vl_compilenn.m. Refer to the [official website]( http://www.vlfeat.org/matconvnet/install/#compiling) for more info on compiling. You’ll also need to download one of the pretrained networks (transfer learning is currently the only supported CNN feature).
 5. Make sure you have an up to date [Java Runtime Environment]( http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) installed.
 6. run **startServer.m**
 
 # Remote procedure call
-Once the CoralMe MATLAB server is running, it can be queried remotely using the JSON-RPC2 protocol, with the format for the method "**ClassName.method**, and the arguments in an array  **[arg1, arg2, ...]** as required by the MATLAB class signature. Only public methods of the classes listed in **coralMeFactory.m** can be query. See the API section for a full list of the supported calls.
+Once the CoralMe MATLAB server is running, it can be queried remotely using the JSON-RPC2 protocol, with the format for the method "**ClassName.method**", and the arguments in an array  **[arg1, arg2, ...]** as required by the MATLAB class signature. Only public methods of the classes listed in **coralMeFactory.m** can be query. See the API section for a full list of the supported calls.
 
 Here’s an example of a call from a JavaScript application using the [JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc). Note that the socket should remain open until the client application closes, because the context is erased when the session ends.
 ```
@@ -192,19 +192,18 @@ socket.call('GraphCutMergeTool.merge', [10,10,50,50], //same as the following in
 # Acknowledgement
 
 CoralMe was made possible by the Open-source community:
-- [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) and its [MATLAB wrapper](https://github.com/jebej/MatlabWebSocket)
-- [JSONLab](https://github.com/fangq/jsonlab)
+- [Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket) and its [MATLAB wrapper](https://github.com/jebej/MatlabWebSocket) (CoralMe server)
+- [JSONLab](https://github.com/fangq/jsonlab) (JSON parsing and encoding tools)
 - [MatConvNet](http://www.vlfeat.org/matconvnet/) (for convolutionnal neural nets).
 - [Texton code, and dictionary](http://vision.ucsd.edu/content/moorea-labeled-corals), by Beijbom et.al. in CVPR 2012, "Automated - Annotation of Coral Reef Survey Images"
 - [Local Binary Patterns](http://www.cse.oulu.fi/CMV/Downloads/LBPMatlab) by Marko Heikkilä and Timo Ahonen
 - Completed Local Binary Patterns by Zhenhua Guo, Lei Zhang, and David Zhang
-- [Color Descritors] (http://lear.inrialpes.fr/people/vandeweijer/color_descriptors.html) by Joost van de Weijer
+- [Color Descriptors] (http://lear.inrialpes.fr/people/vandeweijer/color_descriptors.html) by Joost van de Weijer
 - Smart Segmentation Tool by JN. Blanchet
 - [Multi-classifier Fusion](https://peerj.com/preprints/2026/) by JN. Blanchet, S. Déry, JA. Landry
 - [VLFeat](http://www.vlfeat.org/)
 - [LIBSVM](https://www.csie.ntu.edu.tw/~cjlin/libsvm/)
-- [JavaScript JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc)
+- [JavaScript JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc) (For remote calls from the web app demo)
 
 
-# License
-The CoralMe source code (src dir) is licensed under the MIT license. Each library (lib dir) have their own license.
+# LicenseThe CoralMe source code (src dir) is licensed under the GNU GENERAL PUBLIC license. Each library (lib dir) have their own license (see license files).
