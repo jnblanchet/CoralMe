@@ -28,8 +28,25 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
             this.regionSize = 200;
             this.regularizer = 400;
             this.graphCutRatio = 0;
-            
-            this.setImage(image);
+            %%
+            f_ = imresize(image,0.5);
+            textureMap = computeTextureMap( f_, 20);
+            % sample some points
+            points = reshape(textureMap,[],20);
+            % normalize
+            points = normalize( 'minmax', points);
+            % Principal component analysis
+            [coeff,~,~] = pca(points,3,'svd');
+            newIm = reshape(coeff',size(f_));
+            newIm = imresize(newIm,[size(image,1),size(image,2)]);
+            newIm = newIm - min(newIm(:));
+            newIm = newIm / max(newIm(:));
+            newIm_ = uint8(newIm * 255);
+            for i=3:-1:1
+                newIm__(:,:,i) = histeq(newIm_(:,:,i));
+            end
+            %%
+            this.setImage(newIm__);
         end
         
         % redefining setImage to use Lab space
@@ -40,6 +57,7 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
                 error('Upscaling image not supported.')
             end
             
+            %this.image = image;
             this.image = vl_xyz2lab(vl_rgb2xyz(image)) ;
             
             this.image = image;
@@ -75,7 +93,10 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
         end
         
         function [contourImage] = getMap(this)
-            labelMap = vl_slic(single(this.resizedImage), this.regionSize, this.regularizer) + 1;
+            labelMap = vl_slic(single(this.resizedImage), this.regionSize, this.regularizer, 'MinRegionSize',(this.regionSize/2).^2) + 1;
+            
+            % eliminate small regions
+            %labelMap = medfilt2(labelMap, round([this.regionSize this.regionSize] / 4), 'symmetric');
             
             if this.graphCutRatio > 0
                 labelMap = this.cutGraph(labelMap);
@@ -108,6 +129,7 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
             this.colorMap = uint8(hsv(:,:,1)*(this.numBins-1));
         end
         
+        %% TODO: this needs to be improved significantely (it's just a proof on concept for now)
         function labelMap = cutGraph(this, labelMap)
             if isempty(this.lbpMap) || isempty(this.colorMap)
                 this.cacheTextureFeatures();
