@@ -28,23 +28,24 @@ classdef SuperPixelExtractor < AbstractSegmentationApproach
             this.regionSize = 200;
             this.regularizer = 400;
             this.graphCutRatio = 0;
-            %%
-            f_ = imresize(image,0.5);
-            textureMap = computeTextureMap( f_, 20);
-            % sample some points
-            points = reshape(textureMap,[],20);
-            % normalize
-            points = normalize( 'minmax', points);
-            % Principal component analysis
-            [coeff,~,~] = pca(points,3,'svd');
-            newIm = reshape(coeff',size(f_));
-            newIm = imresize(newIm,[size(image,1),size(image,2)]);
-            newIm = newIm - min(newIm(:));
-            newIm = newIm / max(newIm(:));
-            newIm_ = uint8(newIm * 255);
-            for i=3:-1:1
-                newIm__(:,:,i) = histeq(newIm_(:,:,i));
-            end
+            %% this is an experiment: it replaces RGB with PCA local texture features (LBP + hue hist)
+%             f_ = imresize(image,0.5);
+%             textureMap = computeTextureMap( f_, 20);
+%             % sample some points
+%             points = reshape(textureMap,[],20);
+%             % normalize
+%             points = normalize( 'minmax', points);
+%             % Principal component analysis
+%             [coeff,~,~] = pca(points,3,'svd');
+%             newIm = reshape(coeff',size(f_));
+%             newIm = imresize(newIm,[size(image,1),size(image,2)]);
+%             newIm = newIm - min(newIm(:));
+%             newIm = newIm / max(newIm(:));
+%             newIm_ = uint8(newIm * 255);
+%             for i=3:-1:1
+%                 newIm__(:,:,i) = histeq(newIm_(:,:,i));
+%             end
+            newIm__ = image;
             %%
             this.setImage(newIm__);
         end
