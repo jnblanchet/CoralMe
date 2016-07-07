@@ -61,11 +61,11 @@ classdef Dataset < handle
             % Check that all labels from the otherDataset are part of this
             % dataset and convert them using a LUT
             u = unique(otherDataset.labels);
-            lblConverter = zeros(1,u(end));
+            lblConverter = zeros(u(end),1);
             for i = 1:numel(u)
                 otherLbl = otherDataset.labelDescriptions{u};
-                indx = strfind(this.labelDescriptions,otherLbl);
-                index = find(not(cellfun('isempty', indx)));
+                indx = strcmp(this.labelDescriptions,otherLbl);
+                index = find(indx);
                 if(isempty(index))
                     error('Cannot merge: labels in otherDs are not part of labels in this dataset. Add them first!');
                 end
@@ -84,23 +84,19 @@ classdef Dataset < handle
                 extractrOrder(i) = index;
             end
             % merging process:
-            % 1) featureMatrices
-            for i = 1:numel(this.featureMatrices)
-                this.featureMatrices{extractrOrder(i)} = [ ...
+            % 1) feature Matrices
+            for i = 1:numel(otherDataset.featureMatrices)
+                if(numel(this.featureMatrices) < extractrOrder(i))
+                    this.featureMatrices{extractrOrder(i)} = [];
+                end
+                this.featureMatrices{extractrOrder(i)} = [...
                     this.featureMatrices{extractrOrder(i)};
                     otherDataset.featureMatrices{i};
                 ];
             end
             % 2) labels
             this.labels = [this.labels; lblConverter(otherDataset.labels)];
-
-            % 3) featureMatrices
-            for i = 1:numel(this.featureMatrices)
-                this.featureMatrices{extractrOrder(i)} = [ ...
-                    this.featureMatrices{extractrOrder(i)};
-                    otherDataset.featureMatrices{i};
-                ];
-            end
+            
         end
         
         % Launches SVM training. This can be quite computationaly expensive
