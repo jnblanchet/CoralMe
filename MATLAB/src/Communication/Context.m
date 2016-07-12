@@ -53,36 +53,33 @@ classdef Context < handle
                 errorStruct.code = jsonrpc2.JSONRPC2Error.JSON_METHOD_NOT_FOUND;
                 error(errorStruct)
             end
-            
-            % build the command
-            % build output
+            % get the number of output
             mc = meta.class.fromName(className);
             mp = findobj(mc.MethodList,'Name',method);
-            if isempty(mp.OutputNames)
-                out = '';
-                result = [];
-            else
-                out = 'result =';
-            end
-            % build parameters
+            outCount = numel(mp.OutputNames);
+
+            % build parameters string (for console log)
             args = request.getParams();
             if numel(args) > 0
                 for i=numel(args):-1:1
-                    arguments{i} = ['args{' num2str(i) '}'];
                     descr{i} = [class(args{i}) '[' num2str(size(args{i})) ']'];
                 end
-                arguments = strjoin(arguments,',');
                 descr = strjoin(descr,',');
             else
-                arguments  = '';
                 descr = '';
             end
-            
+
             % invoke it!
 %             try
-                display(sprintf('Evaluating: "%s.%s(%s)";',className,method,descr));
-                command = sprintf('%s instance.%s(%s);',out,method,arguments);
-                eval(command); % TODO: find a better way to do this.
+                display(sprintf('Executing: "%s.%s(%s)";',className,method,descr));
+                if(outCount == 0)
+                    result = [];
+                    instance.(method)(args{:});
+                else
+                    result = instance.(method)(args{:});
+                end
+%                 command = sprintf('%s instance.%s(%s);',out,method,arguments);
+%                 eval(command); % TODO: find a better way to do this.
 %             catch err
 %                 errorStruct.message = sprintf('Unable to complete request, MATLAB error:"%s".',err.message);
 %                 errorStruct.code = jsonrpc2.JSONRPC2Error.JSON_INTERNAL_ERROR;
