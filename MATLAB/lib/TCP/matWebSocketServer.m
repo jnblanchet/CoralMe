@@ -149,9 +149,11 @@ classdef matWebSocketServer < handle
             % keep them current
             % Append log property
             c = cell(1); h=c;
-            c = cellstr(dec2hex(connIn.hashCode));
-            htest = connIn.getRemoteSocketAddress;
-            if ~isempty(htest); h = cell(htest.toString); end;
+            if ~isempty(connIn)
+                c = cellstr(dec2hex(connIn.hashCode));
+                htest = connIn.getRemoteSocketAddress;
+                if ~isempty(htest); h = cell(htest.toString); end;
+            end
             if ischar(messageIn); messageIn=cellstr(messageIn); end;
             m = cell(messageIn);
             obj.localLogAppend(c,h,m);
