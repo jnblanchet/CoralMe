@@ -11,6 +11,7 @@ classdef GrabCut < AbstractSegmentationApproach
         roi % current region of interest (image crop)
         roiRect % rectangle of the current region of interest
         mask % current segmentation solution for the current ROI
+        currentId
     end
     
     
@@ -34,6 +35,7 @@ classdef GrabCut < AbstractSegmentationApproach
                 image(:,:,i) = imadjust(image(:,:,i));
             end
             this.setImage(image);
+            this.currentId = -1;
         end
         
         % set the regularizer factor (lambda)
@@ -52,9 +54,15 @@ classdef GrabCut < AbstractSegmentationApproach
         % updates the segmentation map with the current ROI,
         % and returns the restult.
         function [contourImage] = getMap(this)
+            % get current Map
             labelMap = this.segMap.getMap();
+            % erase any previous segmentation for currentId
+            if( this.currentId > 0)
+                labelMap(labelMap == this.currentId) = 0;
+            end
+            % integrate new segmentation of ROI
             tmp = labelMap(this.roiRect(1):this.roiRect(2),this.roiRect(3):this.roiRect(4));
-            tmp(this.mask) = (max(labelMap(:)) + 1);
+            tmp(this.mask & tmp == 0) = this.currentId;
             labelMap(this.roiRect(1):this.roiRect(2),this.roiRect(3):this.roiRect(4)) = tmp;
             
             this.segMap.setMap(labelMap);
@@ -74,10 +82,15 @@ classdef GrabCut < AbstractSegmentationApproach
             this.roiRect = [x0, x1, y0, y1];
             this.roi = this.resizedImage(x0:x1,y0:y1,:);
             % approximate foreground rectangle and launch segmentation
-            h = (x1 - x0)/4;
-            w = (y1 - y0)/4;
+            h = round((x1 - x0)/4);
+            w = round((y1 - y0)/4);
             this.mask = false(size(this.roi,1),size(this.roi,2));
-            this.mask(x0+h:x1-h,y0+w:y1-w) = true;
+            this.mask(h:end-h,w:end-w) = true;
+            
+            % set segmentation Id for current region
+            labelMap = this.segMap.getMap();
+            this.currentId = max(labelMap(:)) + 1;
+            
             this.computeGrabCut(); % launch segmentation.
             contourImage = this.getMap(); % return result.
         end
@@ -89,7 +102,7 @@ classdef GrabCut < AbstractSegmentationApproach
             [x0,x1,y0,y1] = this.toAbs(x0,x1,y0,y1);
             
             this.mask = false(size(this.roi,1), size(this.roi,2));
-            this.mask(rect(2):rect(2)+rect(4),rect(1):rect(1)+rect(3),:) = true;
+            this.mask(x0:x1,y0:y1) = true;
             this.computeGrabCut(); % launch segmentation.
             contourImage = this.getMap(); % return result.
         end
@@ -113,11 +126,27 @@ classdef GrabCut < AbstractSegmentationApproach
             labelMap(labelMap == v) = 0;
             this.segMap.setMap(labelMap);
         end
+        
+        % deletes the most recently created GrabCut region
+        function removeLastRegion(this)
+            if this.currentId > -1               
+                labelMap = this.segMap.getMap();
+                labelMap(labelMap == this.currentId) = 0;
+                this.segMap.setMap(labelMap);
+                this.currentId = -1;
+            end
+        end
     end
     
     methods (Access = protected)
         function afterImageChanged(this)
             % clear everything here
+            this.roi = [];
+            this.roiRect = [];
+            this.mask = [];
+                      
+            labelMap = zeros(size(this.resizedImage,1),size(this.resizedImage,2),'uint16');
+            this.segMap.setMap(labelMap);
         end
     end
     
@@ -135,20 +164,12 @@ classdef GrabCut < AbstractSegmentationApproach
             while true
                 [l, ~] = optimizeWithBK(BKhandle, size(this.mask,1), size(this.mask,2), [objPDF(:)'; bkgPDF(:)']);
                 this.mask = ~logical(l-1);
-                
-                E = ComputeEnergy(neighborhoodWeights, double(this.mask), objPDF, bkgPDF) ;
-                
+                E = computeEnergy(neighborhoodWeights, double(this.mask), objPDF, bkgPDF) ;
                 if (abs(bestE - E) < 10e-4 || counter >= MaxNiter)
-                    if counter == MaxNiter
-                        disp(['stopped: performed ' num2str(counter) ' iterations']);
-                    else
-                        disp('stopped: converged');
-                    end
                     break;
                 end
                 counter = counter + 1;
                 bestE = min(E,bestE);
-                
                 [objPDF, bkgPDF] = getPDF(this.roi, this.mask);
             end
             BK_Delete(BKhandle);
@@ -157,8 +178,8 @@ classdef GrabCut < AbstractSegmentationApproach
         
         function [x0,x1,y0,y1] = toAbs(this, x0,x1,y0,y1)
             x0 = this.toAbsolute(x0,size(this.resizedImage,1));
-            y0 = this.toAbsolute(y0,size(this.resizedImage,2));
             x1 = this.toAbsolute(x1,size(this.resizedImage,1));
+            y0 = this.toAbsolute(y0,size(this.resizedImage,2));
             y1 = this.toAbsolute(y1,size(this.resizedImage,2));
         end
     end

@@ -10,6 +10,9 @@ function instance = coralMeFactory(context, className)
         switch className
             case 'Context'
                 instance = context; 
+            case 'GrabCut'
+                requiresImage(context);
+                instance = SmartRegionSelector(context.getImage(), context.segMap);
             case 'SmartRegionSelector'
                 requiresImage(context);
                 instance = SmartRegionSelector(context.getImage(), context.segMap);
