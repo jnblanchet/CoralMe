@@ -10,7 +10,7 @@
 %% load image, prepare selector
 % f = imread('AIMS_demo.JPG');
 % f = imresize(f,500/max(size(f)));
-f = imread('MLC_demo.JPG');
+f = imread('Mushroom Coral by Brocken Inaglory.JPG');
 f = imresize(f,750/max(size(f)));
 selector = SmartRegionSelector(f);
 imshow(f);
