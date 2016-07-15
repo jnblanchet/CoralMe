@@ -60,6 +60,10 @@ classdef SegmentationMap < handle
             % filter out non zeros classes
             colorLegend = colorLegend(classes > 0,:);
         end
+        
+        function clearMap(this)
+            this.map = [];
+        end
     end
     
 end

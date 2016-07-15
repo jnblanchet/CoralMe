@@ -98,7 +98,7 @@ classdef Context < handle
         function setImage(this, image)
             flushAllObjects(this);
             this.image = image;
-            this.segMap = SegmentationMap();
+            this.segMap.clearMap();
         end
     end
     
