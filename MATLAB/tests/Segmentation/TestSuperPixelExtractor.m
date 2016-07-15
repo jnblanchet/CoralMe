@@ -15,7 +15,7 @@ else
 end
 
 %% Set image
-fprintf('Creating SuperPixelExtractor with no arguments... ');
+fprintf('Setting a new image with no arguments... ');
 error = false;
 try
 a.setImage(f);
