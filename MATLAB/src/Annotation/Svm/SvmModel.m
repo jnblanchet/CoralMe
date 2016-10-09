@@ -11,6 +11,7 @@ classdef SvmModel < handle
         
         % builds a model using the specified features
         function model = train(this, features, labels)
+            labels = double(labels);
             classLabels = unique(labels);
             % normalize data
             features(isnan(features)) = 0; % eliminate any possible extraction errors.
@@ -34,11 +35,10 @@ classdef SvmModel < handle
             [~, ~, probEstimates] = svmpredict(zeros(size(features,1),1), features, this.model.svm, '-b 1');
             
             removedClasses = true(this.model.svm.nr_class,1);
-            removedClasses(this.model.svm.Label) = false;
-            [~,reOrderIds] = sort([this.model.svm.Label',find(removedClasses)']);
+            removedClasses(this.model.svm.Label+(1-min(this.model.svm.Label))) = false;
+            [~,reOrderIds] = sort([this.model.svm.Label',find(removedClasses)'-(1-min(this.model.svm.Label))]);
             probabilities = probEstimates(:,reOrderIds);
-        end
-        
+        end 
     end
     
 end
