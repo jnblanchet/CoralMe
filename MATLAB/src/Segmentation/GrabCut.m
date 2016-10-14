@@ -129,24 +129,41 @@ classdef GrabCut < AbstractSegmentationApproach
             contourImage = this.getMap(); % return result.
         end
         
-        function contourImage = addForegroundHardConstraints(this,x,y)
-            x = this.toAbsolute(x,size(this.resizedImage,1));
-            y = this.toAbsolute(y,size(this.resizedImage,2));
-            x = min(this.roiRect(2),max(1,x - this.roiRect(1)));
-            y = min(this.roiRect(4),max(1,y - this.roiRect(3)));
+        function contourImage = addForegroundHardConstraints(this,x0, y0, x1, y1)
+            [x0,x1,y0,y1] = this.toAbs(x0,x1,y0,y1);
             
-            idx = sub2ind(size(this.roi),x,y);
-            this.backgroundConstraintMask(idx) = -Inf;
+            x0 = min(this.roiRect(2),max(1,x0 - this.roiRect(1)));
+            x1 = min(this.roiRect(2),max(1,x1 - this.roiRect(1)));
+            y0 = min(this.roiRect(4),max(1,y0 - this.roiRect(3)));
+            y1 = min(this.roiRect(4),max(1,y1 - this.roiRect(3)));
+            
+            this.backgroundConstraintMask(x0:x1,y0:y1) = Inf;
+            this.foregroundConstraintMask(x0:x1,y0:y1) = 0;
             this.computeGrabCut(); % launch segmentation.
             contourImage = this.getMap();
         end
         
-        function contourImage = addBackgroundHardConstraints(this,points)
-           idx = sub2ind(size(this.roi),points(1,:),points(1,:));
-            this.foregroundConstraintMask(idx) = -Inf;
+        function contourImage = addBackgroundHardConstraints(this,x0, y0, x1, y1)
+            [x0,x1,y0,y1] = this.toAbs(x0,x1,y0,y1);
+            
+            x0 = min(this.roiRect(2),max(1,x0 - this.roiRect(1)));
+            x1 = min(this.roiRect(2),max(1,x1 - this.roiRect(1)));
+            y0 = min(this.roiRect(4),max(1,y0 - this.roiRect(3)));
+            y1 = min(this.roiRect(4),max(1,y1 - this.roiRect(3)));
+            
+            this.foregroundConstraintMask(x0:x1,y0:y1) = Inf;
+            this.backgroundConstraintMask(x0:x1,y0:y1) = 0;
             this.computeGrabCut(); % launch segmentation.
             contourImage = this.getMap();
         end
+        
+
+%         function contourImage = addBackgroundHardConstraints(this,points)
+%            idx = sub2ind(size(this.roi),points(1,:),points(1,:));
+%             this.foregroundConstraintMask(idx) = -Inf;
+%             this.computeGrabCut(); % launch segmentation.
+%             contourImage = this.getMap();
+%         end
         
         % deletes the region at the specified point and sets it to
         % background (0). x,y may be absolute or relative [0,1].

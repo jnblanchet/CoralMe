@@ -32,13 +32,14 @@ function main()
     outputDir = ['.' filesep 'examples' filesep  'GrabCutAnnotationTool' filesep 'output'];
 
     Labels = {'Coral', 'Algae', 'Others'}; % add more labels here. The resulting annotation will be saved using the IDs of these classes (1,2,3,...)
+    grabCutRegularizerFactor = 10; % higher = smoother borders
     
     %% Initialization
     images = dir([inputImagesDir filesep imagesFormat]);
     instructions = {...
-        'Press S to explicitly select seed region (to describe object of interest).'...
-        '(NYI) Press F to refine by selecting FOREGROUND pixels (force pixel into foreground).'...
-        '(NYI) Press B to refine by selecting FOREGROUND pixels (force pixel into background).'...
+        'Press S to re-specify (explicitly) seed region (to describe object of interest).'...
+        'Press F to refine by selecting FOREGROUND pixels (force pixel into foreground).'...
+        'Press B to refine by selecting BACKGROUND pixels (force pixel into background).'...
         'Press Enter to segment a new region.'...
         'Press ESC to remove last region.'...
         '(NYI) Press O to Proceed to annotation.'...
@@ -49,32 +50,40 @@ function main()
     for image = images % loop through all images 
         f = imread([inputImagesDir filesep image.name]);
         grabCutContext = GrabCut(f);
+        grabCutContext.setRegularizer(grabCutRegularizerFactor)
         f_resized = grabCutContext.getResizeImage(); % grabCut uses a smaller image for performance reasons. This by be adjusted using "grabCut.setResizeFactor(1)";
         resultOverlay = selectROI(f_resized,grabCutContext);
         
-        userIsDone = false;
+        userIsDone = false; % this is set to true once the user is ready for annotation
+        reshow = true; % this is set to false when we don't want to show the image again (update) between two operations
         while (~userIsDone) % loop while user wants to perform more segmentation operations on this image.
-            showOverlay(f_resized,resultOverlay);
-            title({'Initial segmentation (best guess). Press H for help.'})
-            fig = gcf;
+            if(reshow)
+                showOverlay(f_resized,resultOverlay);
+                title({'Initial segmentation (best guess). Press H for help.'});
+                fig = gcf;
+            end
             waitforbuttonpress();
+            reshow = true;
             switch fig.CurrentCharacter
-                case 'h'
+                case 'h' % show instructions
                     msgbox(instructions);
-                case 's'
+                    reshow = false; % don't reshow the image, nothing changed
+                case 's' % allow the re-selection of the seed area
                     resultOverlay = selectForegroundRectangle(f_resized,grabCutContext);
-                case 'f'
-                    refineRegion(f_resized,grabCutContext);
+                case 'f' % add foreground constraint
+                    refineRegion(f_resized,grabCutContext,false);
+                    resultOverlay = grabCutContext.getMap();
+                case 'b' % add background constraint
+                    refineRegion(f_resized,grabCutContext,true);
+                    resultOverlay = grabCutContext.getMap();
                 case 27 % escape
                     grabCutContext.removeLastRegion();
                     resultOverlay = grabCutContext.getMap();
-                    showOverlay(f_resized,resultOverlay);
                 case 13 % enter
                     resultOverlay = selectROI(f_resized,grabCutContext);
             end
         end
         % save result to drive
-        
     end
 end
 
@@ -97,10 +106,15 @@ function resultOverlay = selectForegroundRectangle(f,gcc)
 end
 
 
-function refineRegion(f,gcc)
-    title('Use normal button clicks to add points. A shift-, right-, or double-click adds a final point and ends the selection. Pressing Return or Enter ends the selection without adding a final point. Pressing Backspace or Delete removes the previously selected point.');
-    [y,x] = getpts;
-    gcc.addForegroundHardConstraints(x,y);
+function refineRegion(f,gcc, isForeground)
+    title('Use drag click to select a forground region.');
+    roi = getrect(); % returns [x,y,width,height]
+    [x0,y0,x1,y1] = adjustCoords( roi, size(f));
+    if(isForeground)
+        gcc.addForegroundHardConstraints(x0,y0,x1,y1);
+    else
+        gcc.addBackgroundHardConstraints(x0,y0,x1,y1);
+    end
 end
 
 function Annotation(f,gcc)
