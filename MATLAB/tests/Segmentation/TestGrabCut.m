@@ -4,7 +4,7 @@ f = imread('Mushroom Coral by Brocken Inaglory.JPG');
 fprintf('Creating GabCut... ');
 error = false;
 try
-a = GrabCut(f);
+    a = GrabCut(f);
 catch
     error = true;
 end

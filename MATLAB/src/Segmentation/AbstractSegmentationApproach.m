@@ -54,6 +54,10 @@ classdef (Abstract) AbstractSegmentationApproach < handle
             resizeFactor = this.resizeFactor;
         end
         
+        function im = getResizeImage(this)
+            im = this.resizedImage;
+        end
+        
         function labelMap = getLabelMap(this)
             labelMap = this.segMap.getMap;
         end
