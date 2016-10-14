@@ -206,4 +206,5 @@ CoralMe was made possible by the Open-source community:
 - [JavaScript JSON RPC 2.0 jQuery Plugin](https://github.com/datagraph/jquery-jsonrpc) (For remote calls from the web app demo)
 
 
-# LicenseThe CoralMe source code (src dir) is licensed under the GNU GENERAL PUBLIC license. Each library (lib dir) have their own license (see license files).
+# License
+The CoralMe source code (src dir) is licensed under the GNU GENERAL PUBLIC license. Each library (lib dir) have their own license (see license files).
