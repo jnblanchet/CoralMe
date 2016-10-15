@@ -137,8 +137,8 @@ classdef GrabCut < AbstractSegmentationApproach
             y0 = min(this.roiRect(4),max(1,y0 - this.roiRect(3)));
             y1 = min(this.roiRect(4),max(1,y1 - this.roiRect(3)));
             
-            this.backgroundConstraintMask(x0:x1,y0:y1) = Inf;
-            this.foregroundConstraintMask(x0:x1,y0:y1) = 0;
+            this.backgroundConstraintMask(x0:x1,y0:y1) = 0;
+            this.foregroundConstraintMask(x0:x1,y0:y1) = Inf;
             this.computeGrabCut(); % launch segmentation.
             contourImage = this.getMap();
         end
@@ -173,8 +173,12 @@ classdef GrabCut < AbstractSegmentationApproach
             
             labelMap = this.segMap.getMap();
             v = labelMap(x,y);
-            labelMap(labelMap == v) = 0;
-            this.segMap.setMap(labelMap);
+            if(v == this.currentId)
+               this.removeLastRegion(); 
+            else
+                labelMap(labelMap == v) = 0;
+                this.segMap.setMap(labelMap);
+            end            
         end
         
         % deletes the most recently created GrabCut region

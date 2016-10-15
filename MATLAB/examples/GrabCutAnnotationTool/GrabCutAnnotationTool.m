@@ -42,7 +42,7 @@ function main()
         'Press B to refine by selecting BACKGROUND pixels (force pixel into background).'...
         'Press Enter to segment a new region.'...
         'Press ESC to remove last region.'...
-        '(NYI) Press O to Proceed to annotation.'...
+        'Press O to Proceed to annotation.'...
         '(NYI) Press T to remove region at specified point.'...
         }';
 
@@ -71,10 +71,13 @@ function main()
                 case 's' % allow the re-selection of the seed area
                     resultOverlay = selectForegroundRectangle(f_resized,grabCutContext);
                 case 'f' % add foreground constraint
-                    refineRegion(f_resized,grabCutContext,false);
+                    refineRegion(f_resized,grabCutContext,true);
                     resultOverlay = grabCutContext.getMap();
                 case 'b' % add background constraint
-                    refineRegion(f_resized,grabCutContext,true);
+                    refineRegion(f_resized,grabCutContext,false);
+                    resultOverlay = grabCutContext.getMap();
+                case 'o' % remove region at selected point
+                    removeAtPoint(grabCutContext);
                     resultOverlay = grabCutContext.getMap();
                 case 27 % escape
                     grabCutContext.removeLastRegion();
@@ -115,6 +118,12 @@ function refineRegion(f,gcc, isForeground)
     else
         gcc.addBackgroundHardConstraints(x0,y0,x1,y1);
     end
+end
+
+function removeAtPoint(gcc)
+    title('Select a region to remove.');
+    [y,x] = ginput(1);
+    gcc.removeRegionAtPoint(x,y);
 end
 
 function Annotation(f,gcc)
