@@ -137,8 +137,8 @@ classdef GrabCut < AbstractSegmentationApproach
             y0 = min(this.roiRect(4),max(1,y0 - this.roiRect(3)));
             y1 = min(this.roiRect(4),max(1,y1 - this.roiRect(3)));
             
-            this.backgroundConstraintMask(x0:x1,y0:y1) = 0;
-            this.foregroundConstraintMask(x0:x1,y0:y1) = Inf;
+            this.foregroundConstraintMask(x0:x1,y0:y1) = 0;
+            this.backgroundConstraintMask(x0:x1,y0:y1) = -10E10;
             this.computeGrabCut(); % launch segmentation.
             contourImage = this.getMap();
         end

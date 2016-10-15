@@ -26,7 +26,7 @@
 function main()
     clear; clc; % clear memory and console output.
 
-    %% Parametersh
+    %% Parameters
     inputImagesDir = ['.' filesep 'examples' filesep  'GrabCutAnnotationTool' filesep 'input'];
     imagesFormat = '*.tif';
     outputDir = ['.' filesep 'examples' filesep  'GrabCutAnnotationTool' filesep 'output'];
@@ -42,18 +42,18 @@ function main()
         'Press B to refine by selecting BACKGROUND pixels (force pixel into background).'...
         'Press Enter to segment a new region.'...
         'Press ESC to remove last region.'...
-        'Press O to Proceed to annotation.'...
-        '(NYI) Press T to remove region at specified point.'...
+        'Press A to Proceed to annotation.'...
+        'Press T to remove region at specified point.'...
         }';
-
+        AnnotationLUT = []; % this is the annotation map (contains label ids)
     %% Main program
-    for image = images % loop through all images 
+    for image = images' % loop through all images 
         f = imread([inputImagesDir filesep image.name]);
         grabCutContext = GrabCut(f);
         grabCutContext.setRegularizer(grabCutRegularizerFactor)
         f_resized = grabCutContext.getResizeImage(); % grabCut uses a smaller image for performance reasons. This by be adjusted using "grabCut.setResizeFactor(1)";
         resultOverlay = selectROI(f_resized,grabCutContext);
-        
+        % step (1) SEGMENTATION
         userIsDone = false; % this is set to true once the user is ready for annotation
         reshow = true; % this is set to false when we don't want to show the image again (update) between two operations
         while (~userIsDone) % loop while user wants to perform more segmentation operations on this image.
@@ -76,9 +76,11 @@ function main()
                 case 'b' % add background constraint
                     refineRegion(f_resized,grabCutContext,false);
                     resultOverlay = grabCutContext.getMap();
-                case 'o' % remove region at selected point
+                case 't' % remove region at selected point
                     removeAtPoint(grabCutContext);
                     resultOverlay = grabCutContext.getMap();
+                case 'a' % end segmentation
+                    userIsDone = true;
                 case 27 % escape
                     grabCutContext.removeLastRegion();
                     resultOverlay = grabCutContext.getMap();
@@ -86,13 +88,42 @@ function main()
                     resultOverlay = selectROI(f_resized,grabCutContext);
             end
         end
-        % save result to drive
+        
+        % step (2) ANNOTATION
+        AnnotationLUT = zeros(size(f_resized,1),size(f_resized,2),'uint8');
+        resultOverlay = grabCutContext.getMap();
+        segmentationMap = grabCutContext.getLabelMap();
+         while (true) % loop util the user presses enter
+            preview = previewAnnotation(f_resized,AnnotationLUT,numel(Labels));
+            
+            showOverlay(preview,resultOverlay);
+            title({'Hover the mouse over a region, and use digits keys to select a class. Press L for labels. Enter to finish.'});
+            [y,x,button] = ginput(1);
+            
+            if isempty(button) % pressing enter returns and empty set
+                break;
+            end
+            
+            switch button
+                case 'h' % show instructions
+                    msgbox([{['Classes 1 to ' num2str(numel(Labels))]} Labels {'(or 0 for background)'}]);
+                otherwise
+                    v = button - '0'; % convert to integer from 1 to 9
+                    if v >= 0 && v < 9 % artificial limit. This should be changed if there are more classes added.
+                        id = segmentationMap(round(x),round(y));
+                        AnnotationLUT(id == segmentationMap) = v;
+                    end
+            end
+         end
+        
+        % step (3) SAVE and proceed to next image.
+        imwrite(AnnotationLUT,[outputDir filesep image.name])
     end
 end
 
 
 
-%% GUI operations. Once an image is loaded, there are 2 steps: ROI selection and Annotation.
+%% GUI operations.
 function resultOverlay = selectROI(f,gcc)
     imshow(f);
     title('\color{blue}Drag click (hold left mouse down and move) to select a rectangular region containing the entire object of interest.')
@@ -126,8 +157,12 @@ function removeAtPoint(gcc)
     gcc.removeRegionAtPoint(x,y);
 end
 
-function Annotation(f,gcc)
-
+function fusedImage = previewAnnotation(f,indexMap,numClasses)
+    fusedImage = zeros(size(f,1),size(f,2),size(f,3));
+    fusedImage(:,:,1) = double(indexMap) ./ numClasses;
+    fusedImage(:,:,2) = 1.0;
+    fusedImage(:,:,3) = indexMap > 0;
+    fusedImage = uint8((double(f)*3 + (255 * hsv2rgb(fusedImage)))/4);
 end
 
 function showOverlay(f,resultOverlay)
