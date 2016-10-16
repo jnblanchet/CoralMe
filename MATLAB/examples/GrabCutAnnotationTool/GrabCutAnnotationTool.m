@@ -33,6 +33,7 @@ function main()
 
     Labels = {'Coral', 'Algae', 'Others'}; % add more labels here. The resulting annotation will be saved using the IDs of these classes (1,2,3,...)
     grabCutRegularizerFactor = 10; % higher = smoother borders
+    rescaleFactor = 0.5; % The grabcut tool automatically resizes images for performance (to less than 1 megapixel). You can force a size explicitly (higher = better precision), at the cost of performance.
     
     %% Initialization
     images = dir([inputImagesDir filesep imagesFormat]);
@@ -50,7 +51,8 @@ function main()
     for image = images' % loop through all images 
         f = imread([inputImagesDir filesep image.name]);
         grabCutContext = GrabCut(f);
-        grabCutContext.setRegularizer(grabCutRegularizerFactor)
+        grabCutContext.setRegularizer(grabCutRegularizerFactor);
+        grabCutContext.setResizeFactor(rescaleFactor);
         f_resized = grabCutContext.getResizeImage(); % grabCut uses a smaller image for performance reasons. This by be adjusted using "grabCut.setResizeFactor(1)";
         resultOverlay = selectROI(f_resized,grabCutContext);
         % step (1) SEGMENTATION
