@@ -117,7 +117,7 @@ function main()
          end
         
         % step (3) SAVE and proceed to next image.
-        imwrite(AnnotationLUT,[outputDir filesep image.name])
+        imwrite(imresize(AnnotationLUT,[size(f,1),size(f,2)],'nearest'),[outputDir filesep image.name]);
     end
 end
 
