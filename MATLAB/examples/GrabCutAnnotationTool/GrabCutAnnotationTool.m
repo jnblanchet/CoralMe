@@ -17,12 +17,6 @@
 % 4) Define the following parameters to your needs (see below).
 % 5) Hit F5 to run the application
 
-% TODO:
-% 1) refine segmentation
-% 2) select a label
-% 3) delete last region
-% 4) delete selected region
-% 5) save result to jpg file.
 function main()
     clear; clc; % clear memory and console output.
 
