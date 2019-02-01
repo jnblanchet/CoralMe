@@ -1,5 +1,7 @@
-# What is CoralMe (http://CoralMe.xyz)
+# What is CoralMe
 CoralMe is a bundle of state-of-the-art coral reef image annotation algorithms for the purpose of long term coral reef health monitoring. Image annotation today is still mostly done by hand, which is an extremely time consuming task. CoralMe offers tools to speed up manual annotation, or perform automatic annotation. Researchers can easily contribute to CoralMe within their usual MATLAB environment, while allowing external software to directly use these tools.
+
+[![CoralMe Video](https://img.youtube.com/vi/CG6FuAqV8ag/0.jpg)](https://www.youtube.com/watch?v=CG6FuAqV8ag)
 
 # Why CoralMe?
 Currently, transitioning cutting-edge technology from research to operational is difficult. It requires computer vision experts, skilled software engineers, expensive software licenses and a considerable amount of time. Furthermore, because technology evolves so quickly, today's methods may become obsolete within just a few months. CoralMe addresses both of these problems. Firstly, because computer vision researchers contribute directly to CoralMe through MATLAB, state of the art methods are readily available. Secondly, CoralMe's integration in any existing software is done through simple remote procedure calls, and requires nothing more than a novice programmer to implement. See examples below for more information.
